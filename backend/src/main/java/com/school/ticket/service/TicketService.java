@@ -27,6 +27,7 @@ public class TicketService {
     private final TicketRepository ticketRepo;
     private final TicketLogRepository logRepo;
     private final AppProperties props;
+    private final DingTalkNotifier dingTalkNotifier;
 
     private static final DateTimeFormatter YMD = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -44,6 +45,7 @@ public class TicketService {
         t.setStatus("待处理");
         t.setCode(generateCode());
         ticketRepo.save(t);
+        dingTalkNotifier.notifyNewTicketAsync(t); // 异步推送钉钉通知
         return TicketResponse.from(t, List.of());
     }
 

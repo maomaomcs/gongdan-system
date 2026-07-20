@@ -50,6 +50,11 @@ export const createUser = (data) => api.post('/admin/users', data)
 export const setUserEnabled = (id, enabled) => api.patch('/admin/users/' + id, { enabled })
 export const deleteUser = (id) => api.delete('/admin/users/' + id)
 
+// 系统设置 - 钉钉通知
+export const getDingSettings = () => api.get('/admin/settings/ding')
+export const saveDingSettings = (data) => api.put('/admin/settings/ding', data)
+export const testDingNotify = () => api.post('/admin/settings/ding/test')
+
 export const listTickets = (params) => api.get('/admin/tickets', { params })
 export const getTicket = (id) => api.get('/admin/tickets/' + id)
 export const updateTicket = (id, data) => api.patch('/admin/tickets/' + id, data)
