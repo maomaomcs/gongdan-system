@@ -1,0 +1,30 @@
+[Unit]
+Description=校园报障工单系统 (Spring Boot)
+After=network.target mysql.service mysqld.service
+Wants=network.target
+
+[Service]
+Type=simple
+# 运行用户(建议用非 root 的普通用户,如 www 或专门建的 ticket 用户)
+User=ticket
+WorkingDirectory=/opt/ticket-system
+
+# ---- 环境变量:按你的实际情况修改 ----
+Environment=PORT=8082
+Environment=DB_USER=ticket
+Environment=DB_PASSWORD=改成你的数据库密码
+Environment=ADMIN_INIT_PASSWORD=改成你的管理员初始密码
+Environment=UPLOAD_DIR=/opt/ticket-system/data/uploads
+
+# JDK 路径按服务器实际情况(which java 查)
+ExecStart=/usr/bin/java -jar /opt/ticket-system/app.jar
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+
+# 日志输出到 journald,用 journalctl -u ticket-system 查看
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

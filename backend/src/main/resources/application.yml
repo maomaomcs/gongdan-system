@@ -1,5 +1,6 @@
 server:
-  port: 8080
+  port: ${PORT:8082}
+  forward-headers-strategy: framework   # 部署在 Nginx 反代后也能正确识别
 
 spring:
   application:
