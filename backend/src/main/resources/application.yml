@@ -24,7 +24,10 @@ spring:
 
 # 业务配置
 app:
-  admin-password: ${ADMIN_PASSWORD:admin123}
+  # 首次启动会用这里的账号密码自动创建初始管理员(仅当库中无任何管理员时)。
+  # 登录后请在"账号管理"里新增自己的账号并停用/改掉默认账号。
+  init-admin-username: ${ADMIN_INIT_USERNAME:admin}
+  init-admin-password: ${ADMIN_INIT_PASSWORD:admin123}
   categories:
     - 电脑/主机
     - 投影仪

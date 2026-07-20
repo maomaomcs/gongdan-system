@@ -7,7 +7,9 @@
         <p>输入密码进入工单后台</p>
       </div>
       <el-card>
-        <el-input v-model="password" type="password" size="large" placeholder="请输入管理密码"
+        <el-input v-model="username" size="large" placeholder="用户名" :prefix-icon="User"
+          @keyup.enter="doLogin" style="margin-bottom:14px" />
+        <el-input v-model="password" type="password" size="large" placeholder="密码" :prefix-icon="Lock"
           show-password @keyup.enter="doLogin" />
         <el-button type="primary" size="large" style="width:100%;margin-top:16px" :loading="loading" @click="doLogin">
           登录
@@ -24,18 +26,21 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { User, Lock } from '@element-plus/icons-vue'
 import { login } from '../api'
 
 const router = useRouter()
+const username = ref('')
 const password = ref('')
 const loading = ref(false)
 
 async function doLogin() {
-  if (!password.value) return ElMessage.warning('请输入密码')
+  if (!username.value || !password.value) return ElMessage.warning('请输入用户名和密码')
   loading.value = true
   try {
-    const r = await login(password.value)
+    const r = await login(username.value.trim(), password.value)
     localStorage.setItem('ticket_token', r.token)
+    localStorage.setItem('ticket_user', r.displayName || r.username)
     ElMessage.success('登录成功')
     router.push('/admin/tickets')
   } catch (e) {

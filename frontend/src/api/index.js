@@ -39,7 +39,16 @@ export default api
 export const getConfig = () => api.get('/config')
 export const createTicket = (data) => api.post('/tickets', data)
 export const queryByCode = (code) => api.get('/tickets/code/' + encodeURIComponent(code))
-export const login = (password) => api.post('/login', { password })
+export const login = (username, password) => api.post('/login', { username, password })
+
+// 账号相关
+export const getMe = () => api.get('/admin/me')
+export const logout = () => api.post('/admin/logout')
+export const changePassword = (oldPassword, newPassword) => api.post('/admin/change-password', { oldPassword, newPassword })
+export const listUsers = () => api.get('/admin/users')
+export const createUser = (data) => api.post('/admin/users', data)
+export const setUserEnabled = (id, enabled) => api.patch('/admin/users/' + id, { enabled })
+export const deleteUser = (id) => api.delete('/admin/users/' + id)
 
 export const listTickets = (params) => api.get('/admin/tickets', { params })
 export const getTicket = (id) => api.get('/admin/tickets/' + id)

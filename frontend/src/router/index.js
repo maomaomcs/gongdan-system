@@ -12,6 +12,7 @@ const routes = [
       { path: '', redirect: '/admin/tickets' },
       { path: 'tickets', name: 'tickets', component: () => import('../views/Admin.vue') },
       { path: 'stats', name: 'stats', component: () => import('../views/Stats.vue') },
+      { path: 'users', name: 'users', component: () => import('../views/Users.vue') },
     ],
   },
 ]

@@ -4,8 +4,9 @@ import com.school.ticket.config.AppProperties;
 import com.school.ticket.dto.CreateTicketRequest;
 import com.school.ticket.dto.LoginRequest;
 import com.school.ticket.dto.TicketResponse;
+import com.school.ticket.entity.AdminUser;
+import com.school.ticket.service.AdminUserService;
 import com.school.ticket.service.TicketService;
-import com.school.ticket.web.ApiException;
 import com.school.ticket.web.TokenStore;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class PublicController {
     private final TicketService ticketService;
     private final TokenStore tokenStore;
     private final AppProperties props;
+    private final AdminUserService adminUserService;
 
     /** 提交报修 */
     @PostMapping("/tickets")
@@ -50,12 +52,15 @@ public class PublicController {
         );
     }
 
-    /** 管理员登录 */
+    /** 管理员登录(用户名 + 密码) */
     @PostMapping("/login")
     public Map<String, Object> login(@Valid @RequestBody LoginRequest req) {
-        if (!props.getAdminPassword().equals(req.password())) {
-            throw new ApiException(401, "密码错误");
-        }
-        return Map.of("token", tokenStore.issue());
+        AdminUser u = adminUserService.authenticate(req.username().trim(), req.password());
+        String token = tokenStore.issue(u.getUsername());
+        return Map.of(
+                "token", token,
+                "username", u.getUsername(),
+                "displayName", u.getDisplayName() == null ? u.getUsername() : u.getDisplayName()
+        );
     }
 }

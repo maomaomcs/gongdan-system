@@ -13,7 +13,9 @@ import java.util.List;
 @Component
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
-    private String adminPassword;
+    /** 首次启动自动创建的初始管理员账号 */
+    private String initAdminUsername = "admin";
+    private String initAdminPassword = "admin123";
     private List<String> categories;
     private List<String> statuses;
     private List<String> urgencies;

@@ -19,8 +19,7 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
-        String auth = request.getHeader("Authorization");
-        String token = (auth != null && auth.startsWith("Bearer ")) ? auth.substring(7) : null;
+        String token = TokenStore.extractToken(request);
         if (tokenStore.valid(token)) return true;
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
