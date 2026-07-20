@@ -17,3 +17,8 @@ backend/.m2repo/
 
 # Ф≈╔Е©≈
 *.log
+
+# ╫ьм╪/аый╠╫е╠╬
+shot*.png
+shot.js
+*-test.js
