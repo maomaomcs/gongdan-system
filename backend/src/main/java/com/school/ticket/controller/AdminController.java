@@ -30,13 +30,15 @@ public class AdminController {
     private final ExcelExportService excelExportService;
 
     @GetMapping("/tickets")
-    public List<TicketResponse> list(
+    public com.school.ticket.dto.PageResponse<TicketResponse> list(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String urgency,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false, name = "q") String keyword) {
-        return ticketService.list(status, category, urgency, location, keyword);
+            @RequestParam(required = false, name = "q") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ticketService.listPaged(status, category, urgency, location, keyword, page, size);
     }
 
     @GetMapping("/tickets/{id}")
@@ -67,7 +69,7 @@ public class AdminController {
             @RequestParam(required = false) String urgency,
             @RequestParam(required = false) String location,
             @RequestParam(required = false, name = "q") String keyword) {
-        List<TicketResponse> list = ticketService.list(status, category, urgency, location, keyword);
+        List<TicketResponse> list = ticketService.listAll(status, category, urgency, location, keyword);
         byte[] data = excelExportService.exportTickets(list);
         String filename = "报修工单_" + LocalDate.now() + ".xlsx";
         String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");

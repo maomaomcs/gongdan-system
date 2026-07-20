@@ -2,6 +2,8 @@ package com.school.ticket.service;
 
 import com.school.ticket.config.AppProperties;
 import com.school.ticket.dto.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import com.school.ticket.entity.Ticket;
 import com.school.ticket.entity.TicketLog;
 import com.school.ticket.repository.TicketLogRepository;
@@ -62,11 +64,12 @@ public class TicketService {
         return "BX" + LocalDateTime.now().format(YMD) + "-" + System.currentTimeMillis();
     }
 
-    // ---------- 我的报修(按用户) ----------
+    // ---------- 我的报修(按用户,分页 + 筛选) ----------
     @Transactional(readOnly = true)
-    public List<TicketResponse> listByUser(Long userId) {
-        return ticketRepo.findByUserIdOrderByIdDesc(userId).stream()
-                .map(TicketResponse::from).toList();
+    public PageResponse<TicketResponse> listByUser(Long userId, String status, String keyword, int page, int size) {
+        Specification<Ticket> spec = buildSpec(userId, status, null, null, null, keyword);
+        Page<Ticket> p = ticketRepo.findAll(spec, PageRequest.of(Math.max(page, 0), clampSize(size)));
+        return PageResponse.of(p.map(TicketResponse::from));
     }
 
     @Transactional(readOnly = true)
@@ -101,11 +104,12 @@ public class TicketService {
         return TicketResponse.from(t, logs);
     }
 
-    // ---------- 列表(后台,多条件筛选) ----------
-    @Transactional(readOnly = true)
-    public List<TicketResponse> list(String status, String category, String urgency, String location, String keyword) {
-        Specification<Ticket> spec = (root, query, cb) -> {
+    /** 构造查询条件(带排序);userId 非空时只查该用户的工单 */
+    private Specification<Ticket> buildSpec(Long userId, String status, String category,
+                                            String urgency, String location, String keyword) {
+        return (root, query, cb) -> {
             List<Predicate> ps = new ArrayList<>();
+            if (userId != null) ps.add(cb.equal(root.get("userId"), userId));
             if (StringUtils.hasText(status)) ps.add(cb.equal(root.get("status"), status));
             if (StringUtils.hasText(category)) ps.add(cb.equal(root.get("category"), category));
             if (StringUtils.hasText(urgency)) ps.add(cb.equal(root.get("urgency"), urgency));
@@ -116,30 +120,45 @@ public class TicketService {
                         cb.like(root.get("title"), kw),
                         cb.like(root.get("description"), kw),
                         cb.like(root.get("reporter"), kw),
+                        cb.like(root.get("location"), kw),
                         cb.like(root.get("code"), kw)
                 ));
             }
+            // 仅对数据查询设置排序(计数查询结果类型为 Long,跳过)
+            if (Ticket.class.equals(query.getResultType())) {
+                var statusOrder = cb.<Integer>selectCase()
+                        .when(cb.equal(root.get("status"), "待处理"), 0)
+                        .when(cb.equal(root.get("status"), "处理中"), 1)
+                        .when(cb.equal(root.get("status"), "已解决"), 2)
+                        .otherwise(3);
+                var urgencyOrder = cb.<Integer>selectCase()
+                        .when(cb.equal(root.get("urgency"), "紧急"), 0)
+                        .otherwise(1);
+                query.orderBy(cb.asc(statusOrder), cb.asc(urgencyOrder), cb.desc(root.get("id")));
+            }
             return cb.and(ps.toArray(new Predicate[0]));
         };
-        // 排序:待处理优先、紧急优先、新→旧
-        List<Ticket> all = ticketRepo.findAll(spec);
-        all.sort((a, b) -> {
-            int sa = statusOrder(a.getStatus()), sb = statusOrder(b.getStatus());
-            if (sa != sb) return Integer.compare(sa, sb);
-            int ua = "紧急".equals(a.getUrgency()) ? 0 : 1, ub = "紧急".equals(b.getUrgency()) ? 0 : 1;
-            if (ua != ub) return Integer.compare(ua, ub);
-            return Long.compare(b.getId(), a.getId());
-        });
-        return all.stream().map(TicketResponse::from).toList();
     }
 
-    private int statusOrder(String s) {
-        return switch (s) {
-            case "待处理" -> 0;
-            case "处理中" -> 1;
-            case "已解决" -> 2;
-            default -> 3;
-        };
+    // ---------- 列表(后台,分页 + 多条件筛选) ----------
+    @Transactional(readOnly = true)
+    public PageResponse<TicketResponse> listPaged(String status, String category, String urgency,
+                                                  String location, String keyword, int page, int size) {
+        Specification<Ticket> spec = buildSpec(null, status, category, urgency, location, keyword);
+        Page<Ticket> p = ticketRepo.findAll(spec, PageRequest.of(Math.max(page, 0), clampSize(size)));
+        return PageResponse.of(p.map(TicketResponse::from));
+    }
+
+    // ---------- 全部(导出用,不分页) ----------
+    @Transactional(readOnly = true)
+    public List<TicketResponse> listAll(String status, String category, String urgency, String location, String keyword) {
+        Specification<Ticket> spec = buildSpec(null, status, category, urgency, location, keyword);
+        return ticketRepo.findAll(spec).stream().map(TicketResponse::from).toList();
+    }
+
+    private int clampSize(int size) {
+        if (size <= 0) return 20;
+        return Math.min(size, 100);
     }
 
     // ---------- 更新(后台) ----------

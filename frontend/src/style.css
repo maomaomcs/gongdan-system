@@ -143,3 +143,5 @@ body {
   .admin-main { padding: 12px !important; }
   .page-title { font-size: 18px; }
 }
+
+.my-filter { display: flex; gap: 10px; margin-bottom: 14px; }

@@ -47,7 +47,7 @@ export const userLogin = (username, password) => api.post('/user/login', { usern
 export const userMe = () => api.get('/user/me')
 export const userLogout = () => api.post('/user/logout')
 export const submitTicket = (data) => api.post('/user/tickets', data)
-export const getMyTickets = () => api.get('/user/tickets')
+export const getMyTickets = (params) => api.get('/user/tickets', { params })
 export const getMyTicket = (id) => api.get('/user/tickets/' + id)
 
 // ---- 管理端登录/账号 ----

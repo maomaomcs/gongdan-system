@@ -2,7 +2,18 @@
   <div class="u-page">
     <h2 class="u-title">我的报修</h2>
 
-    <el-empty v-if="!loading && !list.length" description="还没有报修记录" />
+    <div class="my-filter">
+      <el-select v-model="status" placeholder="全部状态" clearable size="large" style="flex:1" @change="search">
+        <el-option label="待处理" value="待处理" />
+        <el-option label="处理中" value="处理中" />
+        <el-option label="已解决" value="已解决" />
+        <el-option label="已关闭" value="已关闭" />
+      </el-select>
+      <el-input v-model="keyword" placeholder="搜索标题/位置/工单号" clearable size="large" style="flex:2"
+        @keyup.enter="search" @clear="search" />
+    </div>
+
+    <el-empty v-if="!loading && !list.length" description="没有符合条件的报修" />
 
     <div v-loading="loading">
       <el-card v-for="t in list" :key="t.id" class="ticket-item" shadow="never" @click="open(t)">
@@ -20,6 +31,11 @@
         </div>
         <div class="ti-time">{{ t.createdAt }}</div>
       </el-card>
+
+      <div v-if="total > size" style="display:flex;justify-content:center;margin-top:12px">
+        <el-pagination background layout="prev, pager, next" :total="total"
+          :current-page="page" :page-size="size" @current-change="onPage" />
+      </div>
     </div>
 
     <!-- 详情 -->
@@ -63,6 +79,11 @@ const list = ref([])
 const loading = ref(false)
 const show = ref(false)
 const cur = ref(null)
+const status = ref('')
+const keyword = ref('')
+const page = ref(1)
+const size = ref(10)
+const total = ref(0)
 
 function statusType(s) {
   return { 待处理: 'warning', 处理中: 'primary', 已解决: 'success', 已关闭: 'info' }[s] || 'info'
@@ -70,10 +91,20 @@ function statusType(s) {
 
 async function load() {
   loading.value = true
-  try { list.value = await getMyTickets() }
+  try {
+    const params = { page: page.value - 1, size: size.value }
+    if (status.value) params.status = status.value
+    if (keyword.value.trim()) params.q = keyword.value.trim()
+    const res = await getMyTickets(params)
+    list.value = res.list
+    total.value = res.total
+  }
   catch (e) { ElMessage.error(e.message) }
   finally { loading.value = false }
 }
+
+function search() { page.value = 1; load() }
+function onPage(p) { page.value = p; load() }
 
 async function open(t) {
   try { cur.value = await getMyTicket(t.id); show.value = true }

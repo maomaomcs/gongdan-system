@@ -74,10 +74,15 @@ public class UserController {
         return Map.of("code", t.code(), "ticket", t);
     }
 
-    /** 我的报修列表 */
+    /** 我的报修列表(分页 + 按状态/关键词筛选) */
     @GetMapping("/user/tickets")
-    public List<TicketResponse> myTickets(HttpServletRequest request) {
-        return ticketService.listByUser(currentUser(request).getId());
+    public com.school.ticket.dto.PageResponse<TicketResponse> myTickets(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false, name = "q") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request) {
+        return ticketService.listByUser(currentUser(request).getId(), status, keyword, page, size);
     }
 
     /** 我的报修详情 */

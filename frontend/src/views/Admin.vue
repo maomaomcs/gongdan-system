@@ -5,19 +5,19 @@
 
     <el-card style="margin-bottom:16px">
       <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
-        <el-select v-model="filters.status" placeholder="全部状态" clearable style="width:130px" @change="load">
+        <el-select v-model="filters.status" placeholder="全部状态" clearable style="width:130px" @change="search">
           <el-option v-for="s in cfg.statuses" :key="s" :label="s" :value="s" />
         </el-select>
-        <el-select v-model="filters.category" placeholder="全部类型" clearable style="width:150px" @change="load">
+        <el-select v-model="filters.category" placeholder="全部类型" clearable style="width:150px" @change="search">
           <el-option v-for="c in cfg.categories" :key="c" :label="c" :value="c" />
         </el-select>
-        <el-select v-model="filters.urgency" placeholder="全部紧急度" clearable style="width:130px" @change="load">
+        <el-select v-model="filters.urgency" placeholder="全部紧急度" clearable style="width:130px" @change="search">
           <el-option label="紧急" value="紧急" />
           <el-option label="普通" value="普通" />
         </el-select>
         <el-input v-model="filters.q" placeholder="搜索 标题/位置/报修人/工单号" clearable style="width:260px"
-          @keyup.enter="load" />
-        <el-button type="primary" @click="load">查询</el-button>
+          @keyup.enter="search" @clear="search" />
+        <el-button type="primary" @click="search">查询</el-button>
         <el-button type="success" :icon="Download" :loading="exporting" @click="doExport">导出 Excel</el-button>
       </div>
     </el-card>
@@ -40,6 +40,13 @@
         <el-table-column prop="createdAt" label="提交时间" width="160" />
       </el-table>
       <el-empty v-if="!loading && !list.length" description="暂无工单" />
+      <div v-if="total > 0" style="display:flex;justify-content:flex-end;margin-top:14px">
+        <el-pagination
+          background layout="total, sizes, prev, pager, next"
+          :total="total" :current-page="page" :page-size="size"
+          :page-sizes="[10, 20, 50, 100]"
+          @current-change="onPage" @size-change="onSize" />
+      </div>
     </el-card>
 
     <!-- 详情抽屉 -->
@@ -105,6 +112,9 @@ const filters = reactive({ status: '', category: '', urgency: '', q: '' })
 const list = ref([])
 const loading = ref(false)
 const exporting = ref(false)
+const page = ref(1)
+const size = ref(20)
+const total = ref(0)
 
 const drawer = ref(false)
 const current = ref(null)
@@ -119,15 +129,21 @@ function statusType(s) {
 async function load() {
   loading.value = true
   try {
-    const params = {}
+    const params = { page: page.value - 1, size: size.value }
     for (const k of ['status', 'category', 'urgency', 'q']) if (filters[k]) params[k] = filters[k]
-    list.value = await listTickets(params)
+    const res = await listTickets(params)
+    list.value = res.list
+    total.value = res.total
   } catch (e) {
     ElMessage.error(e.message)
   } finally {
     loading.value = false
   }
 }
+
+function search() { page.value = 1; load() }
+function onPage(p) { page.value = p; load() }
+function onSize(s) { size.value = s; page.value = 1; load() }
 
 async function doExport() {
   exporting.value = true
