@@ -66,6 +66,10 @@ public class Ticket {
     @Column(length = 1000)
     private String resolution;
 
+    /** 报修图片文件名,逗号分隔 */
+    @Column(length = 1000)
+    private String images;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime resolvedAt;

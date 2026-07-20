@@ -13,6 +13,8 @@ import java.util.List;
 @Component
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
+    /** 报修图片存储目录 */
+    private String uploadDir = "./data/uploads";
     /** 首次启动自动创建的初始管理员账号 */
     private String initAdminUsername = "admin";
     private String initAdminPassword = "admin123";

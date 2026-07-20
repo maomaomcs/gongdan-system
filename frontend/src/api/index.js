@@ -60,3 +60,22 @@ export const getTicket = (id) => api.get('/admin/tickets/' + id)
 export const updateTicket = (id, data) => api.patch('/admin/tickets/' + id, data)
 export const addLog = (id, data) => api.post('/admin/tickets/' + id + '/logs', data)
 export const getStats = () => api.get('/admin/stats')
+
+// 导出 Excel(带筛选条件),返回 blob 并触发下载
+export async function exportTicketsExcel(params) {
+  const token = localStorage.getItem('ticket_token')
+  const qs = new URLSearchParams(params).toString()
+  const res = await fetch('/api/admin/tickets/export' + (qs ? '?' + qs : ''), {
+    headers: { Authorization: 'Bearer ' + token },
+  })
+  if (!res.ok) throw new Error('导出失败')
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = '报修工单_' + new Date().toISOString().slice(0, 10) + '.xlsx'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}

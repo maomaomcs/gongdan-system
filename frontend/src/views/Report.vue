@@ -41,6 +41,21 @@
               placeholder="什么时候坏的、有什么现象、试过什么方法(选填)" />
           </el-form-item>
 
+          <el-form-item label="上传照片(选填)">
+            <el-upload
+              action="/api/upload"
+              list-type="picture-card"
+              accept="image/*"
+              :limit="6"
+              :on-success="onUploadSuccess"
+              :on-remove="onUploadRemove"
+              :on-error="onUploadError"
+              :before-upload="beforeUpload">
+              <el-icon><Plus /></el-icon>
+            </el-upload>
+            <div style="font-size:12px;color:#94a3b8">拍下坏掉的设备,最多6张,单张≤8MB</div>
+          </el-form-item>
+
           <el-form-item label="紧急程度">
             <el-radio-group v-model="form.urgency">
               <el-radio-button value="普通">普通</el-radio-button>
@@ -77,7 +92,24 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import { getConfig, createTicket } from '../api'
+
+const images = ref([])  // 已上传图片文件名
+function beforeUpload(file) {
+  if (file.size > 8 * 1024 * 1024) { ElMessage.error('图片不能超过 8MB'); return false }
+  return true
+}
+function onUploadSuccess(resp) {
+  if (resp && resp.name) images.value.push(resp.name)
+}
+function onUploadRemove(file) {
+  const name = file.response && file.response.name
+  if (name) images.value = images.value.filter((n) => n !== name)
+}
+function onUploadError() {
+  ElMessage.error('图片上传失败,请重试')
+}
 
 const router = useRouter()
 const formRef = ref()
@@ -111,7 +143,7 @@ async function submit() {
     if (!valid) return
     loading.value = true
     try {
-      const r = await createTicket({ ...form })
+      const r = await createTicket({ ...form, images: images.value })
       resultCode.value = r.code
       submitted.value = true
     } catch (e) {
@@ -128,6 +160,7 @@ function goQuery() {
 
 function reset() {
   Object.assign(form, { reporter: '', contact: '', location: '', category: '', title: '', description: '', urgency: '普通' })
+  images.value = []
   submitted.value = false
 }
 </script>

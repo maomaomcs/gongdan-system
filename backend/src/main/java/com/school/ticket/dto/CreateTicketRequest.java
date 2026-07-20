@@ -10,5 +10,6 @@ public record CreateTicketRequest(
         @NotBlank(message = "故障类型不能为空") @Size(max = 32) String category,
         @NotBlank(message = "问题简述不能为空") @Size(max = 128) String title,
         @Size(max = 1000) String description,
-        String urgency
+        String urgency,
+        java.util.List<String> images
 ) {}

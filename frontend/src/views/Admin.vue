@@ -18,6 +18,7 @@
         <el-input v-model="filters.q" placeholder="搜索 标题/位置/报修人/工单号" clearable style="width:260px"
           @keyup.enter="load" />
         <el-button type="primary" @click="load">查询</el-button>
+        <el-button type="success" :icon="Download" :loading="exporting" @click="doExport">导出 Excel</el-button>
       </div>
     </el-card>
 
@@ -54,6 +55,11 @@
           </el-descriptions-item>
           <el-descriptions-item label="提交时间">{{ current.createdAt }}</el-descriptions-item>
           <el-descriptions-item v-if="current.description" label="详情">{{ current.description }}</el-descriptions-item>
+          <el-descriptions-item v-if="current.images && current.images.length" label="照片">
+            <el-image v-for="n in current.images" :key="n" :src="'/api/files/' + n"
+              :preview-src-list="current.images.map(x => '/api/files/' + x)" fit="cover"
+              style="width:76px;height:76px;border-radius:8px;margin:2px" />
+          </el-descriptions-item>
         </el-descriptions>
 
         <el-divider>处理</el-divider>
@@ -91,12 +97,14 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getConfig, listTickets, getTicket, updateTicket, addLog } from '../api'
+import { Download } from '@element-plus/icons-vue'
+import { getConfig, listTickets, getTicket, updateTicket, addLog, exportTicketsExcel } from '../api'
 
 const cfg = reactive({ statuses: [], categories: [] })
 const filters = reactive({ status: '', category: '', urgency: '', q: '' })
 const list = ref([])
 const loading = ref(false)
+const exporting = ref(false)
 
 const drawer = ref(false)
 const current = ref(null)
@@ -118,6 +126,20 @@ async function load() {
     ElMessage.error(e.message)
   } finally {
     loading.value = false
+  }
+}
+
+async function doExport() {
+  exporting.value = true
+  try {
+    const params = {}
+    for (const k of ['status', 'category', 'urgency', 'q']) if (filters[k]) params[k] = filters[k]
+    await exportTicketsExcel(params)
+    ElMessage.success('已导出')
+  } catch (e) {
+    ElMessage.error(e.message)
+  } finally {
+    exporting.value = false
   }
 }
 

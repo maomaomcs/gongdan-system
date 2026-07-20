@@ -21,9 +21,15 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
+  servlet:
+    multipart:
+      max-file-size: 8MB       # 单张图片上限
+      max-request-size: 30MB   # 单次请求上限(多张)
 
 # 业务配置
 app:
+  # 报修图片存储目录(相对后端运行目录或绝对路径)
+  upload-dir: ${UPLOAD_DIR:./data/uploads}
   # 首次启动会用这里的账号密码自动创建初始管理员(仅当库中无任何管理员时)。
   # 登录后请在"账号管理"里新增自己的账号并停用/改掉默认账号。
   init-admin-username: ${ADMIN_INIT_USERNAME:admin}

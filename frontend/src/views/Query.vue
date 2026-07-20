@@ -32,6 +32,11 @@
           <el-descriptions-item v-if="ticket.description" label="详情">{{ ticket.description }}</el-descriptions-item>
           <el-descriptions-item v-if="ticket.handler" label="处理人">{{ ticket.handler }}</el-descriptions-item>
           <el-descriptions-item v-if="ticket.resolution" label="解决方案">{{ ticket.resolution }}</el-descriptions-item>
+          <el-descriptions-item v-if="ticket.images && ticket.images.length" label="照片">
+            <el-image v-for="n in ticket.images" :key="n" :src="'/api/files/' + n"
+              :preview-src-list="ticket.images.map(x => '/api/files/' + x)" fit="cover"
+              style="width:72px;height:72px;border-radius:8px;margin:2px" />
+          </el-descriptions-item>
         </el-descriptions>
 
         <div v-if="ticket.logs && ticket.logs.length" style="margin-top:16px">

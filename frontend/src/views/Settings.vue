@@ -36,7 +36,7 @@
         </el-form-item>
 
         <el-form-item v-if="secMode === 'keyword'" label="关键词">
-          <el-input v-model="form.keyword" placeholder="与钉钉机器人"自定义关键词"一致,如:工单" style="max-width:320px" />
+          <el-input v-model="form.keyword" placeholder="与钉钉机器人自定义关键词一致,如:工单" style="max-width:320px" />
           <div class="tip">机器人设置里填的关键词,消息里必须包含它才能发出。</div>
         </el-form-item>
 

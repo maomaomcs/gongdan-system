@@ -28,6 +28,7 @@ public class TicketService {
     private final TicketLogRepository logRepo;
     private final AppProperties props;
     private final DingTalkNotifier dingTalkNotifier;
+    private final FileStorageService fileStorage;
 
     private static final DateTimeFormatter YMD = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -43,6 +44,7 @@ public class TicketService {
         t.setDescription(trimOrNull(req.description()));
         t.setUrgency("紧急".equals(req.urgency()) ? "紧急" : "普通");
         t.setStatus("待处理");
+        t.setImages(sanitizeImages(req.images()));
         t.setCode(generateCode());
         ticketRepo.save(t);
         dingTalkNotifier.notifyNewTicketAsync(t); // 异步推送钉钉通知
@@ -184,6 +186,21 @@ public class TicketService {
 
     private List<StatsResponse.Bucket> limit(List<StatsResponse.Bucket> list, int n) {
         return list.size() > n ? list.subList(0, n) : list;
+    }
+
+    /** 只保留纯文件名(去掉任何路径),最多 6 张,防目录穿越 */
+    private String sanitizeImages(java.util.List<String> images) {
+        if (images == null || images.isEmpty()) return null;
+        java.util.List<String> clean = new ArrayList<>();
+        for (String s : images) {
+            if (s == null) continue;
+            String name = s.replace("\\", "/");
+            name = name.substring(name.lastIndexOf('/') + 1).trim();
+            // 必须是合法文件名且确实已上传到服务器,才接受
+            if (fileStorage.exists(name)) clean.add(name);
+            if (clean.size() >= 6) break;
+        }
+        return clean.isEmpty() ? null : String.join(",", clean);
     }
 
     private String trimOrNull(String s) {
