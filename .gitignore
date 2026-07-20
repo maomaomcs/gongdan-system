@@ -1,0 +1,19 @@
+# 构建产物
+backend/target/
+backend/src/main/resources/static/
+frontend/dist/
+frontend/node_modules/
+
+# 便携运行环境(体积大,应各自下载/解压)
+tooling/jdk-17.0.19+10/
+tooling/mysql-8.0.29-winx64/
+tooling/*.zip
+
+# 数据库数据(含真实数据,单独备份,勿入库)
+tooling/mysql-data/
+
+# Maven 本地缓存
+backend/.m2repo/
+
+# 日志
+*.log

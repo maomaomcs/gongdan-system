@@ -1,0 +1,20 @@
+package com.school.ticket.config;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+/**
+ * 业务配置(对应 application.yml 中的 app.*)
+ */
+@Data
+@Component
+@ConfigurationProperties(prefix = "app")
+public class AppProperties {
+    private String adminPassword;
+    private List<String> categories;
+    private List<String> statuses;
+    private List<String> urgencies;
+}
