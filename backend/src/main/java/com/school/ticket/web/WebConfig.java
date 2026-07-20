@@ -15,11 +15,15 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 public class WebConfig implements WebMvcConfigurer {
 
     private final AdminAuthInterceptor adminAuthInterceptor;
+    private final UserAuthInterceptor userAuthInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(adminAuthInterceptor)
                 .addPathPatterns("/api/admin/**");
+        registry.addInterceptor(userAuthInterceptor)
+                .addPathPatterns("/api/user/**")
+                .excludePathPatterns("/api/user/login", "/api/user/register");
     }
 
     /**

@@ -70,6 +70,9 @@ public class Ticket {
     @Column(length = 1000)
     private String images;
 
+    /** 报修用户ID(关联 app_user) */
+    private Long userId;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime resolvedAt;

@@ -34,8 +34,9 @@ public class TicketService {
 
     // ---------- 创建 ----------
     @Transactional
-    public TicketResponse create(CreateTicketRequest req) {
+    public TicketResponse create(CreateTicketRequest req, Long userId) {
         Ticket t = new Ticket();
+        t.setUserId(userId);
         t.setReporter(req.reporter().trim());
         t.setContact(trimOrNull(req.contact()));
         t.setLocation(req.location().trim());
@@ -59,6 +60,23 @@ public class TicketService {
         }
         // 兜底:加时间戳后缀
         return "BX" + LocalDateTime.now().format(YMD) + "-" + System.currentTimeMillis();
+    }
+
+    // ---------- 我的报修(按用户) ----------
+    @Transactional(readOnly = true)
+    public List<TicketResponse> listByUser(Long userId) {
+        return ticketRepo.findByUserIdOrderByIdDesc(userId).stream()
+                .map(TicketResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public TicketResponse getByIdForUser(Long id, Long userId) {
+        Ticket t = ticketRepo.findById(id)
+                .orElseThrow(() -> new ApiException(404, "工单不存在"));
+        if (!userId.equals(t.getUserId())) {
+            throw new ApiException(403, "无权查看该工单");
+        }
+        return withLogs(t);
     }
 
     // ---------- 查询(公开,按工单号) ----------

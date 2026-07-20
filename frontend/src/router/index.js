@@ -1,13 +1,26 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
-  { path: '/', name: 'report', component: () => import('../views/Report.vue') },
-  { path: '/query', name: 'query', component: () => import('../views/Query.vue') },
-  { path: '/login', name: 'login', component: () => import('../views/Login.vue') },
+  // ---- 用户(老师)端 ----
+  { path: '/login', name: 'userLogin', component: () => import('../views/user/Login.vue') },
+  { path: '/register', name: 'userRegister', component: () => import('../views/user/Register.vue') },
+  {
+    path: '/',
+    component: () => import('../layouts/UserLayout.vue'),
+    meta: { requiresUser: true },
+    children: [
+      { path: '', redirect: '/report' },
+      { path: 'report', name: 'report', component: () => import('../views/user/Report.vue') },
+      { path: 'my', name: 'my', component: () => import('../views/user/MyTickets.vue') },
+    ],
+  },
+
+  // ---- 管理端 ----
+  { path: '/admin/login', name: 'adminLogin', component: () => import('../views/Login.vue') },
   {
     path: '/admin',
     component: () => import('../layouts/AdminLayout.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAdmin: true },
     children: [
       { path: '', redirect: '/admin/tickets' },
       { path: 'tickets', name: 'tickets', component: () => import('../views/Admin.vue') },
@@ -18,15 +31,11 @@ const routes = [
   },
 ]
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-})
+const router = createRouter({ history: createWebHistory(), routes })
 
 router.beforeEach((to) => {
-  if (to.meta.requiresAuth && !localStorage.getItem('ticket_token')) {
-    return { path: '/login' }
-  }
+  if (to.meta.requiresAdmin && !localStorage.getItem('admin_token')) return { path: '/admin/login' }
+  if (to.meta.requiresUser && !localStorage.getItem('user_token')) return { path: '/login' }
 })
 
 export default router

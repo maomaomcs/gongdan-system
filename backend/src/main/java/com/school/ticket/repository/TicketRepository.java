@@ -12,6 +12,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
 
     Optional<Ticket> findByCode(String code);
 
+    List<Ticket> findByUserIdOrderByIdDesc(Long userId);
+
     // ---- 统计用查询 ----
     @Query("select t.status, count(t) from Ticket t group by t.status")
     List<Object[]> countByStatus();

@@ -71,7 +71,7 @@ public class AdminUserService {
         if (repo.count() <= 1) {
             throw new ApiException(400, "至少保留一个管理员账号");
         }
-        tokenStore.revokeUser(u.getUsername());
+        tokenStore.revokeUser(u.getUsername(), TokenStore.ROLE_ADMIN);
         repo.delete(u);
     }
 
@@ -84,7 +84,7 @@ public class AdminUserService {
         }
         u.setEnabled(enabled);
         repo.save(u);
-        if (!enabled) tokenStore.revokeUser(u.getUsername());
+        if (!enabled) tokenStore.revokeUser(u.getUsername(), TokenStore.ROLE_ADMIN);
     }
 
     @Transactional
@@ -95,7 +95,7 @@ public class AdminUserService {
         }
         u.setPasswordHash(encoder.encode(newPassword));
         repo.save(u);
-        tokenStore.revokeUser(username); // 改密后需重新登录
+        tokenStore.revokeUser(username, TokenStore.ROLE_ADMIN); // 改密后需重新登录
     }
 
     /** 首次启动:库中无账号时创建初始管理员 */

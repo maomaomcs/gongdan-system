@@ -28,15 +28,7 @@ public class PublicController {
     private final AppProperties props;
     private final AdminUserService adminUserService;
 
-    /** 提交报修 */
-    @PostMapping("/tickets")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Map<String, Object> create(@Valid @RequestBody CreateTicketRequest req) {
-        TicketResponse t = ticketService.create(req);
-        return Map.of("code", t.code(), "ticket", t);
-    }
-
-    /** 按工单号查询进度 */
+    /** 按工单号查询进度(公开保留,方便无账号临时查询) */
     @GetMapping("/tickets/code/{code}")
     public TicketResponse getByCode(@PathVariable String code) {
         return ticketService.getByCode(code);
@@ -56,7 +48,7 @@ public class PublicController {
     @PostMapping("/login")
     public Map<String, Object> login(@Valid @RequestBody LoginRequest req) {
         AdminUser u = adminUserService.authenticate(req.username().trim(), req.password());
-        String token = tokenStore.issue(u.getUsername());
+        String token = tokenStore.issue(u.getUsername(), TokenStore.ROLE_ADMIN);
         return Map.of(
                 "token", token,
                 "username", u.getUsername(),
