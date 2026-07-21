@@ -145,3 +145,7 @@ body {
 }
 
 .my-filter { display: flex; gap: 10px; margin-bottom: 14px; }
+
+/* 统计页:列在移动端堆叠时的间距 */
+.stat-col { margin-bottom: 16px; }
+.chart-col { margin-bottom: 16px; }

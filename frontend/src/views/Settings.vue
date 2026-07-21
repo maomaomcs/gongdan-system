@@ -18,7 +18,7 @@
         </div>
       </el-alert>
 
-      <el-form :model="form" label-width="130px" label-position="left">
+      <el-form :model="form" :label-width="isMobile ? undefined : '130px'" :label-position="isMobile ? 'top' : 'left'">
         <el-form-item label="开启通知">
           <el-switch v-model="form.enabled" />
         </el-form-item>
@@ -71,6 +71,9 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getDingSettings, saveDingSettings, testDingNotify } from '../api'
+import { useMobile } from '../composables/useMobile'
+
+const { isMobile } = useMobile()
 
 const form = reactive({ enabled: false, webhook: '', keyword: '', secret: '', secretSet: false })
 const secMode = ref('keyword')

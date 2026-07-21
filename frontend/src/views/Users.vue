@@ -22,7 +22,7 @@
             <el-tag :type="row.enabled ? 'success' : 'info'" effect="light">{{ row.enabled ? '启用' : '停用' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="创建时间" width="170" />
+        <el-table-column v-if="!isMobile" prop="createdAt" label="创建时间" width="170" />
         <el-table-column label="操作" width="200">
           <template #default="{ row }">
             <el-switch :model-value="row.enabled" @change="(v) => toggle(row, v)"
@@ -34,7 +34,7 @@
     </el-card>
 
     <!-- 新增账号 -->
-    <el-dialog v-model="createDialog" title="新增管理员账号" width="440px">
+    <el-dialog v-model="createDialog" title="新增管理员账号" :width="isMobile ? '92%' : '440px'">
       <el-form :model="form" label-position="top">
         <el-form-item label="用户名(登录用)" required>
           <el-input v-model="form.username" placeholder="3~64位,字母/数字" />
@@ -53,7 +53,7 @@
     </el-dialog>
 
     <!-- 修改自己的密码 -->
-    <el-dialog v-model="pwdDialog" title="修改我的密码" width="440px">
+    <el-dialog v-model="pwdDialog" title="修改我的密码" :width="isMobile ? '92%' : '440px'">
       <el-form :model="pwdForm" label-position="top">
         <el-form-item label="原密码" required>
           <el-input v-model="pwdForm.oldPassword" type="password" show-password />
@@ -75,6 +75,9 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { listUsers, createUser, setUserEnabled, deleteUser, changePassword } from '../api'
+import { useMobile } from '../composables/useMobile'
+
+const { isMobile } = useMobile()
 
 const users = ref([])
 const loading = ref(false)

@@ -3,8 +3,8 @@
     <div class="page-title">数据统计</div>
     <p class="page-desc">报修工单的整体情况与分布</p>
 
-    <el-row :gutter="16" style="margin-bottom:16px">
-      <el-col :span="8">
+    <el-row :gutter="16">
+      <el-col :xs="24" :sm="8" class="stat-col">
         <el-card class="stat-card">
           <div style="display:flex;align-items:center;gap:14px">
             <div class="stat-ic" style="background:#eef2ff">📦</div>
@@ -12,7 +12,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="8">
+      <el-col :xs="24" :sm="8" class="stat-col">
         <el-card class="stat-card">
           <div style="display:flex;align-items:center;gap:14px">
             <div class="stat-ic" style="background:#fff7ed">⏳</div>
@@ -20,7 +20,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="8">
+      <el-col :xs="24" :sm="8" class="stat-col">
         <el-card class="stat-card">
           <div style="display:flex;align-items:center;gap:14px">
             <div class="stat-ic" style="background:#ecfdf5">⚡</div>
@@ -31,18 +31,16 @@
     </el-row>
 
     <el-row :gutter="16">
-      <el-col :span="12">
+      <el-col :xs="24" :sm="12" class="chart-col">
         <el-card><div class="chart-box"><v-chart :option="statusOpt" autoresize /></div></el-card>
       </el-col>
-      <el-col :span="12">
+      <el-col :xs="24" :sm="12" class="chart-col">
         <el-card><div class="chart-box"><v-chart :option="categoryOpt" autoresize /></div></el-card>
       </el-col>
-    </el-row>
-    <el-row :gutter="16" style="margin-top:16px">
-      <el-col :span="12">
+      <el-col :xs="24" :sm="12" class="chart-col">
         <el-card><div class="chart-box"><v-chart :option="locationOpt" autoresize /></div></el-card>
       </el-col>
-      <el-col :span="12">
+      <el-col :xs="24" :sm="12" class="chart-col">
         <el-card><div class="chart-box"><v-chart :option="monthOpt" autoresize /></div></el-card>
       </el-col>
     </el-row>

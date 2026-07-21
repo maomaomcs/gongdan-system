@@ -33,11 +33,13 @@
         <el-table-column label="紧急" width="70">
           <template #default="{ row }"><el-tag v-if="row.urgency==='紧急'" type="danger" size="small">急</el-tag></template>
         </el-table-column>
-        <el-table-column prop="title" label="问题" min-width="160" show-overflow-tooltip />
-        <el-table-column prop="location" label="位置" min-width="140" show-overflow-tooltip />
-        <el-table-column prop="category" label="类型" width="130" />
-        <el-table-column prop="reporter" label="报修人" width="90" />
-        <el-table-column prop="createdAt" label="提交时间" width="160" />
+        <el-table-column prop="title" label="问题" min-width="140" show-overflow-tooltip />
+        <el-table-column v-if="!isMobile" prop="location" label="位置" min-width="140" show-overflow-tooltip />
+        <el-table-column v-if="!isMobile" prop="category" label="类型" width="130" />
+        <el-table-column v-if="!isMobile" prop="reporter" label="报修人" width="90" />
+        <el-table-column prop="createdAt" label="提交时间" :width="isMobile ? 120 : 160">
+          <template #default="{ row }">{{ isMobile ? row.createdAt.slice(5, 16) : row.createdAt }}</template>
+        </el-table-column>
       </el-table>
       <el-empty v-if="!loading && !list.length" description="暂无工单" />
       <div v-if="total > 0" style="display:flex;justify-content:flex-end;margin-top:14px">
@@ -50,7 +52,7 @@
     </el-card>
 
     <!-- 详情抽屉 -->
-    <el-drawer v-model="drawer" :title="current?.title" size="480px">
+    <el-drawer v-model="drawer" :title="current?.title" :size="isMobile ? '100%' : '480px'">
       <template v-if="current">
         <el-descriptions :column="1" border size="small">
           <el-descriptions-item label="工单号">{{ current.code }}</el-descriptions-item>
@@ -106,6 +108,9 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Download } from '@element-plus/icons-vue'
 import { getConfig, listTickets, getTicket, updateTicket, addLog, exportTicketsExcel } from '../api'
+import { useMobile } from '../composables/useMobile'
+
+const { isMobile } = useMobile()
 
 const cfg = reactive({ statuses: [], categories: [] })
 const filters = reactive({ status: '', category: '', urgency: '', q: '' })
