@@ -15,6 +15,8 @@ import java.util.List;
 public class AppProperties {
     /** 报修图片存储目录 */
     private String uploadDir = "./data/uploads";
+    /** 报修图片保留天数:超过则每日定时清理;<=0 表示不清理(仅压缩) */
+    private int uploadRetentionDays = 15;
     /** 首次启动自动创建的初始管理员账号 */
     private String initAdminUsername = "admin";
     private String initAdminPassword = "admin123";
