@@ -11,7 +11,11 @@
             <el-input v-model="form.contact" placeholder="手机 / 微信(选填)" />
           </el-form-item>
           <el-form-item label="位置 / 教室" prop="location">
-            <el-input v-model="form.location" placeholder="如:教学楼3楼 302 教室" />
+            <el-select v-if="locations.length" v-model="form.location" filterable allow-create default-first-option
+              placeholder="选择或直接输入,如:教学楼3楼 302 教室" style="width:100%">
+              <el-option v-for="l in locations" :key="l" :label="l" :value="l" />
+            </el-select>
+            <el-input v-else v-model="form.location" placeholder="如:教学楼3楼 302 教室" />
           </el-form-item>
           <el-form-item label="故障类型" prop="category">
             <el-select v-model="form.category" placeholder="请选择…" style="width:100%">
@@ -66,6 +70,7 @@ import { getConfig, submitTicket } from '../../api'
 
 const formRef = ref()
 const categories = ref([])
+const locations = ref([])
 const loading = ref(false)
 const submitted = ref(false)
 const resultCode = ref('')
@@ -87,7 +92,11 @@ function onUp(resp) { if (resp && resp.name) images.value.push(resp.name) }
 function onRm(file) { const n = file.response && file.response.name; if (n) images.value = images.value.filter(x => x !== n) }
 
 onMounted(async () => {
-  try { categories.value = (await getConfig()).categories } catch (e) { /* ignore */ }
+  try {
+    const cfg = await getConfig()
+    categories.value = cfg.categories || []
+    locations.value = cfg.locations || []
+  } catch (e) { /* ignore */ }
 })
 
 async function submit() {

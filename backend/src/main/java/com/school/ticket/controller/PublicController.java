@@ -27,6 +27,7 @@ public class PublicController {
     private final TokenStore tokenStore;
     private final AppProperties props;
     private final AdminUserService adminUserService;
+    private final com.school.ticket.service.SettingService settingService;
 
     /** 按工单号查询进度(公开保留,方便无账号临时查询) */
     @GetMapping("/tickets/code/{code}")
@@ -38,7 +39,8 @@ public class PublicController {
     @GetMapping("/config")
     public Map<String, Object> config() {
         return Map.of(
-                "categories", props.getCategories(),
+                "categories", settingService.getCategories(),
+                "locations", settingService.getLocations(),
                 "statuses", props.getStatuses(),
                 "urgencies", props.getUrgencies(),
                 "registerNeedsInvite", true

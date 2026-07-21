@@ -48,4 +48,25 @@ public class SettingController {
         dingTalkNotifier.sendTest();
         return Map.of("ok", true, "message", "测试通知已发送,请查看钉钉群");
     }
+
+    // ---------- 报修选项:故障类型 / 常用位置 ----------
+
+    /** 读取当前故障类型与常用位置 */
+    @GetMapping("/options")
+    public Map<String, Object> getOptions() {
+        return Map.of(
+                "categories", settingService.getCategories(),
+                "locations", settingService.getLocations()
+        );
+    }
+
+    /** 保存故障类型与常用位置 */
+    @PutMapping("/options")
+    public Map<String, Object> saveOptions(@RequestBody OptionsRequest req) {
+        if (req.categories() != null) settingService.setCategories(req.categories());
+        if (req.locations() != null) settingService.setLocations(req.locations());
+        return getOptions();
+    }
+
+    public record OptionsRequest(java.util.List<String> categories, java.util.List<String> locations) {}
 }

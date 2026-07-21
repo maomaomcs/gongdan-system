@@ -13,6 +13,6 @@ public class SystemSetting {
     @Column(name = "setting_key", length = 64)
     private String key;
 
-    @Column(name = "setting_value", length = 1000)
+    @Column(name = "setting_value", length = 4000)
     private String value;
 }

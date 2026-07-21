@@ -33,6 +33,8 @@ app:
   upload-dir: ${UPLOAD_DIR:./data/uploads}
   # 报修图片保留天数:每天凌晨清理超过该天数的图片;设为 0 表示不删除(只压缩)
   upload-retention-days: ${UPLOAD_RETENTION_DAYS:15}
+  # 登录令牌有效期(天):超过需重新登录
+  token-ttl-days: ${TOKEN_TTL_DAYS:7}
   # 首次启动会用这里的账号密码自动创建初始管理员(仅当库中无任何管理员时)。
   # 登录后请在"账号管理"里新增自己的账号并停用/改掉默认账号。
   init-admin-username: ${ADMIN_INIT_USERNAME:admin}

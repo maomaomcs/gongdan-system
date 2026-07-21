@@ -82,6 +82,8 @@ export const getStats = () => api.get('/admin/stats')
 export const getDingSettings = () => api.get('/admin/settings/ding')
 export const saveDingSettings = (data) => api.put('/admin/settings/ding', data)
 export const testDingNotify = () => api.post('/admin/settings/ding/test')
+export const getOptions = () => api.get('/admin/settings/options')
+export const saveOptions = (data) => api.put('/admin/settings/options', data)
 
 export async function exportTicketsExcel(params) {
   const token = localStorage.getItem('admin_token')

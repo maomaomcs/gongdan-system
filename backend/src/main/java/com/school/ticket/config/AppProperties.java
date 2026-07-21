@@ -17,6 +17,8 @@ public class AppProperties {
     private String uploadDir = "./data/uploads";
     /** 报修图片保留天数:超过则每日定时清理;<=0 表示不清理(仅压缩) */
     private int uploadRetentionDays = 15;
+    /** 登录令牌有效期(天),超过需重新登录 */
+    private int tokenTtlDays = 7;
     /** 首次启动自动创建的初始管理员账号 */
     private String initAdminUsername = "admin";
     private String initAdminPassword = "admin123";

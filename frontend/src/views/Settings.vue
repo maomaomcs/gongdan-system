@@ -1,7 +1,37 @@
 <template>
   <div>
     <div class="page-title">系统设置</div>
-    <p class="page-desc">新工单钉钉通知</p>
+    <p class="page-desc">报修选项 · 新工单钉钉通知</p>
+
+    <!-- 报修选项:故障类型 / 常用位置 -->
+    <el-card style="max-width:720px;margin-bottom:16px">
+      <template #header>
+        <span style="font-weight:600">报修选项</span>
+      </template>
+      <el-form :label-width="isMobile ? undefined : '130px'" :label-position="isMobile ? 'top' : 'left'">
+        <el-form-item label="故障类型">
+          <div class="tag-box">
+            <el-tag v-for="(c, i) in categories" :key="'c' + i" closable @close="categories.splice(i, 1)" class="opt-tag">{{ c }}</el-tag>
+            <el-input v-if="catShow" v-model="catVal" size="small" style="width:140px"
+              @keyup.enter="addCat" @blur="addCat" placeholder="回车添加" />
+            <el-button v-else size="small" :icon="Plus" @click="catShow = true">新增类型</el-button>
+          </div>
+          <div class="tip">老师报修时的"故障类型"下拉选项。</div>
+        </el-form-item>
+        <el-form-item label="常用位置">
+          <div class="tag-box">
+            <el-tag v-for="(l, i) in locations" :key="'l' + i" type="info" closable @close="locations.splice(i, 1)" class="opt-tag">{{ l }}</el-tag>
+            <el-input v-if="locShow" v-model="locVal" size="small" style="width:160px"
+              @keyup.enter="addLoc" @blur="addLoc" placeholder="回车添加" />
+            <el-button v-else size="small" :icon="Plus" @click="locShow = true">新增位置</el-button>
+          </div>
+          <div class="tip">老师报修时可从这里快速选择位置,也允许自行输入其它位置。</div>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="savingOpt" @click="saveOpt">保存选项</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
     <el-card style="max-width:720px">
       <template #header>
@@ -70,10 +100,47 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getDingSettings, saveDingSettings, testDingNotify } from '../api'
+import { Plus } from '@element-plus/icons-vue'
+import { getDingSettings, saveDingSettings, testDingNotify, getOptions, saveOptions } from '../api'
 import { useMobile } from '../composables/useMobile'
 
 const { isMobile } = useMobile()
+
+/* ---- 报修选项 ---- */
+const categories = ref([])
+const locations = ref([])
+const catShow = ref(false); const catVal = ref('')
+const locShow = ref(false); const locVal = ref('')
+const savingOpt = ref(false)
+
+function addCat() {
+  const v = catVal.value.trim()
+  if (v && !categories.value.includes(v)) categories.value.push(v)
+  catVal.value = ''; catShow.value = false
+}
+function addLoc() {
+  const v = locVal.value.trim()
+  if (v && !locations.value.includes(v)) locations.value.push(v)
+  locVal.value = ''; locShow.value = false
+}
+async function loadOptions() {
+  try {
+    const d = await getOptions()
+    categories.value = d.categories || []
+    locations.value = d.locations || []
+  } catch (e) { ElMessage.error(e.message) }
+}
+async function saveOpt() {
+  if (!categories.value.length) return ElMessage.warning('至少保留一个故障类型')
+  savingOpt.value = true
+  try {
+    const d = await saveOptions({ categories: categories.value, locations: locations.value })
+    categories.value = d.categories || []
+    locations.value = d.locations || []
+    ElMessage.success('报修选项已保存')
+  } catch (e) { ElMessage.error(e.message) }
+  finally { savingOpt.value = false }
+}
 
 const form = reactive({ enabled: false, webhook: '', keyword: '', secret: '', secretSet: false })
 const secMode = ref('keyword')
@@ -139,9 +206,11 @@ async function test() {
   finally { testing.value = false }
 }
 
-onMounted(load)
+onMounted(() => { load(); loadOptions() })
 </script>
 
 <style scoped>
 .tip { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+.tag-box { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.opt-tag { }
 </style>
