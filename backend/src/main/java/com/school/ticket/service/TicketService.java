@@ -31,6 +31,7 @@ public class TicketService {
     private final AppProperties props;
     private final DingTalkNotifier dingTalkNotifier;
     private final FileStorageService fileStorage;
+    private final SettingService settingService;
 
     private static final DateTimeFormatter YMD = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -79,6 +80,34 @@ public class TicketService {
         if (!userId.equals(t.getUserId())) {
             throw new ApiException(403, "无权查看该工单");
         }
+        return withLogs(t);
+    }
+
+    /** 报修人催单:仅本人、仅未完成工单;两小时内只能催一次 */
+    @Transactional
+    public TicketResponse urge(Long id, Long userId) {
+        Ticket t = ticketRepo.findById(id)
+                .orElseThrow(() -> new ApiException(404, "工单不存在"));
+        if (!userId.equals(t.getUserId())) {
+            throw new ApiException(403, "无权操作该工单");
+        }
+        if ("已解决".equals(t.getStatus()) || "已关闭".equals(t.getStatus())) {
+            throw new ApiException(400, "工单已处理完成,无需催单");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        if (t.getLastUrgedAt() != null && t.getLastUrgedAt().isAfter(now.minusHours(2))) {
+            throw new ApiException(400, "刚刚已经催过了,请稍后再催");
+        }
+        t.setUrgeCount((t.getUrgeCount() == null ? 0 : t.getUrgeCount()) + 1);
+        t.setLastUrgedAt(now);
+        ticketRepo.save(t);
+
+        TicketLog entry = new TicketLog();
+        entry.setTicketId(t.getId());
+        entry.setContent("报修人催单(第 " + t.getUrgeCount() + " 次)");
+        entry.setAuthor(t.getReporter());
+        logRepo.save(entry);
+
         return withLogs(t);
     }
 
@@ -139,7 +168,8 @@ public class TicketService {
                                                   String location, String keyword, int page, int size) {
         Specification<Ticket> spec = buildSpec(null, status, category, urgency, location, keyword);
         Page<Ticket> p = ticketRepo.findAll(spec, PageRequest.of(Math.max(page, 0), clampSize(size)));
-        return PageResponse.of(p.map(TicketResponse::from));
+        int oh = settingService.getOverdueHours();
+        return PageResponse.of(p.map(t -> TicketResponse.from(t, oh)));
     }
 
     // ---------- 全部(导出用,不分页) ----------

@@ -73,6 +73,13 @@ public class Ticket {
     /** 报修用户ID(关联 app_user) */
     private Long userId;
 
+    /** 催单次数 */
+    @Column(nullable = false)
+    private Integer urgeCount = 0;
+
+    /** 最近一次催单时间 */
+    private LocalDateTime lastUrgedAt;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime resolvedAt;
@@ -81,6 +88,7 @@ public class Ticket {
     public void prePersist() {
         LocalDateTime now = LocalDateTime.now();
         if (createdAt == null) createdAt = now;
+        if (urgeCount == null) urgeCount = 0;
         updatedAt = now;
     }
 

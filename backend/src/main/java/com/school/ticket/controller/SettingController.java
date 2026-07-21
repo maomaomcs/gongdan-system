@@ -51,22 +51,30 @@ public class SettingController {
 
     // ---------- 报修选项:故障类型 / 常用位置 ----------
 
-    /** 读取当前故障类型与常用位置 */
+    /** 读取报修选项:故障类型 / 常用位置 / 常见问题 / 超时小时数 */
     @GetMapping("/options")
     public Map<String, Object> getOptions() {
         return Map.of(
                 "categories", settingService.getCategories(),
-                "locations", settingService.getLocations()
+                "locations", settingService.getLocations(),
+                "faqs", settingService.getFaqs(),
+                "overdueHours", settingService.getOverdueHours()
         );
     }
 
-    /** 保存故障类型与常用位置 */
+    /** 保存报修选项 */
     @PutMapping("/options")
     public Map<String, Object> saveOptions(@RequestBody OptionsRequest req) {
         if (req.categories() != null) settingService.setCategories(req.categories());
         if (req.locations() != null) settingService.setLocations(req.locations());
+        if (req.faqs() != null) settingService.setFaqs(req.faqs());
+        if (req.overdueHours() != null) settingService.setOverdueHours(req.overdueHours());
         return getOptions();
     }
 
-    public record OptionsRequest(java.util.List<String> categories, java.util.List<String> locations) {}
+    public record OptionsRequest(
+            java.util.List<String> categories,
+            java.util.List<String> locations,
+            java.util.List<com.school.ticket.dto.Faq> faqs,
+            Integer overdueHours) {}
 }

@@ -23,15 +23,19 @@
     </el-card>
 
     <el-card>
-      <el-table :data="list" v-loading="loading" style="width:100%" @row-click="openDetail">
+      <el-table :data="list" v-loading="loading" style="width:100%" :row-class-name="rowClass" @row-click="openDetail">
         <el-table-column prop="code" label="工单号" width="150">
           <template #default="{ row }"><span style="font-family:monospace;color:#64748b">{{ row.code }}</span></template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }"><el-tag :type="statusType(row.status)" effect="light">{{ row.status }}</el-tag></template>
         </el-table-column>
-        <el-table-column label="紧急" width="70">
-          <template #default="{ row }"><el-tag v-if="row.urgency==='紧急'" type="danger" size="small">急</el-tag></template>
+        <el-table-column label="标记" width="110">
+          <template #default="{ row }">
+            <el-tag v-if="row.urgency==='紧急'" type="danger" size="small" style="margin-right:4px">急</el-tag>
+            <el-tag v-if="row.overdue" type="danger" effect="dark" size="small" style="margin-right:4px">超时</el-tag>
+            <el-tag v-if="row.urgeCount > 0" type="warning" size="small">催{{ row.urgeCount }}</el-tag>
+          </template>
         </el-table-column>
         <el-table-column prop="title" label="问题" min-width="140" show-overflow-tooltip />
         <el-table-column v-if="!isMobile" prop="location" label="位置" min-width="140" show-overflow-tooltip />
@@ -130,6 +134,7 @@ const newLog = ref('')
 function statusType(s) {
   return { 待处理: 'warning', 处理中: 'primary', 已解决: 'success', 已关闭: 'info' }[s] || 'info'
 }
+function rowClass({ row }) { return row.overdue ? 'overdue-row' : '' }
 
 async function load() {
   loading.value = true
@@ -209,3 +214,8 @@ onMounted(async () => {
   load()
 })
 </script>
+
+<style scoped>
+:deep(.overdue-row td) { background: #fef2f2 !important; }
+:deep(.overdue-row:hover td) { background: #fde8e8 !important; }
+</style>

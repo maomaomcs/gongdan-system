@@ -27,6 +27,26 @@
           </div>
           <div class="tip">老师报修时可从这里快速选择位置,也允许自行输入其它位置。</div>
         </el-form-item>
+
+        <el-form-item label="超时预警(小时)">
+          <el-input-number v-model="overdueHours" :min="1" :max="720" />
+          <span class="tip" style="margin-left:10px">待处理/处理中的工单超过此时长,在后台工单列表会标红提示。</span>
+        </el-form-item>
+
+        <el-form-item label="常见问题自助">
+          <div style="width:100%">
+            <div v-for="(f, i) in faqs" :key="i" class="faq-row">
+              <el-input v-model="f.q" placeholder="问题,如:投影仪没信号怎么办?" style="margin-bottom:6px" />
+              <div style="display:flex;gap:8px;align-items:flex-start">
+                <el-input v-model="f.a" type="textarea" :rows="2" placeholder="处理办法,如:先检查 HDMI 线是否插好、投影仪信号源是否选对" />
+                <el-button type="danger" plain :icon="Delete" @click="faqs.splice(i, 1)" />
+              </div>
+            </div>
+            <el-button size="small" :icon="Plus" @click="faqs.push({ q: '', a: '' })" style="margin-top:6px">新增一条</el-button>
+            <div class="tip">老师报修前会先看到这些问答,能自己解决就不用报修了。</div>
+          </div>
+        </el-form-item>
+
         <el-form-item>
           <el-button type="primary" :loading="savingOpt" @click="saveOpt">保存选项</el-button>
         </el-form-item>
@@ -100,7 +120,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Delete } from '@element-plus/icons-vue'
 import { getDingSettings, saveDingSettings, testDingNotify, getOptions, saveOptions } from '../api'
 import { useMobile } from '../composables/useMobile'
 
@@ -109,6 +129,8 @@ const { isMobile } = useMobile()
 /* ---- 报修选项 ---- */
 const categories = ref([])
 const locations = ref([])
+const faqs = ref([])
+const overdueHours = ref(24)
 const catShow = ref(false); const catVal = ref('')
 const locShow = ref(false); const locVal = ref('')
 const savingOpt = ref(false)
@@ -128,15 +150,25 @@ async function loadOptions() {
     const d = await getOptions()
     categories.value = d.categories || []
     locations.value = d.locations || []
+    faqs.value = d.faqs || []
+    overdueHours.value = d.overdueHours || 24
   } catch (e) { ElMessage.error(e.message) }
 }
 async function saveOpt() {
   if (!categories.value.length) return ElMessage.warning('至少保留一个故障类型')
+  const cleanFaqs = faqs.value.filter(f => (f.q || '').trim())
   savingOpt.value = true
   try {
-    const d = await saveOptions({ categories: categories.value, locations: locations.value })
+    const d = await saveOptions({
+      categories: categories.value,
+      locations: locations.value,
+      faqs: cleanFaqs,
+      overdueHours: overdueHours.value,
+    })
     categories.value = d.categories || []
     locations.value = d.locations || []
+    faqs.value = d.faqs || []
+    overdueHours.value = d.overdueHours || 24
     ElMessage.success('报修选项已保存')
   } catch (e) { ElMessage.error(e.message) }
   finally { savingOpt.value = false }
@@ -213,4 +245,5 @@ onMounted(() => { load(); loadOptions() })
 .tip { font-size: 12px; color: #94a3b8; margin-top: 4px; }
 .tag-box { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .opt-tag { }
+.faq-row { padding: 10px; border: 1px solid var(--line, #e3d8c3); border-radius: 8px; margin-bottom: 10px; }
 </style>

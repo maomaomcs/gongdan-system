@@ -29,7 +29,12 @@
           <span>{{ t.location }}</span>
           <span class="ti-code">{{ t.code }}</span>
         </div>
-        <div class="ti-time">{{ t.createdAt }}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+          <span class="ti-time">{{ t.createdAt }}</span>
+          <el-button v-if="canUrge(t)" size="small" type="warning" plain :loading="urging === t.id"
+            @click.stop="urge(t)">催一下{{ t.urgeCount > 0 ? '(已催' + t.urgeCount + ')' : '' }}</el-button>
+          <span v-else-if="t.urgeCount > 0" style="font-size:12px;color:#b8863b">已催 {{ t.urgeCount }} 次</span>
+        </div>
       </el-card>
 
       <div v-if="total > size" style="display:flex;justify-content:center;margin-top:12px">
@@ -73,10 +78,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getMyTickets, getMyTicket } from '../../api'
+import { getMyTickets, getMyTicket, urgeTicket } from '../../api'
 
 const list = ref([])
 const loading = ref(false)
+const urging = ref(null)
 const show = ref(false)
 const cur = ref(null)
 const status = ref('')
@@ -109,6 +115,19 @@ function onPage(p) { page.value = p; load() }
 async function open(t) {
   try { cur.value = await getMyTicket(t.id); show.value = true }
   catch (e) { ElMessage.error(e.message) }
+}
+
+function canUrge(t) {
+  return t.status === '待处理' || t.status === '处理中'
+}
+async function urge(t) {
+  urging.value = t.id
+  try {
+    const updated = await urgeTicket(t.id)
+    t.urgeCount = updated.urgeCount
+    ElMessage.success('已催单,后勤会尽快处理')
+  } catch (e) { ElMessage.error(e.message) }
+  finally { urging.value = null }
 }
 
 onMounted(load)

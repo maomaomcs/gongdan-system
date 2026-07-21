@@ -91,6 +91,12 @@ public class UserController {
         return ticketService.getByIdForUser(id, currentUser(request).getId());
     }
 
+    /** 催单 */
+    @PostMapping("/user/tickets/{id}/urge")
+    public TicketResponse urge(@PathVariable Long id, HttpServletRequest request) {
+        return ticketService.urge(id, currentUser(request).getId());
+    }
+
     // ---------- 辅助 ----------
     private AppUser currentUser(HttpServletRequest request) {
         return appUserService.getByUsername(tokenStore.currentUsername(request));

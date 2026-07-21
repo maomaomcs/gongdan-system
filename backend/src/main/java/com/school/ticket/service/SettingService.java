@@ -1,6 +1,9 @@
 package com.school.ticket.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.school.ticket.config.AppProperties;
+import com.school.ticket.dto.Faq;
 import com.school.ticket.entity.SystemSetting;
 import com.school.ticket.repository.SystemSettingRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ public class SettingService {
 
     private final SystemSettingRepository repo;
     private final AppProperties props;
+    private final ObjectMapper objectMapper;
 
     // 钉钉通知相关的设置键
     public static final String DING_ENABLED = "ding.enabled";
@@ -31,6 +35,10 @@ public class SettingService {
     // 报修选项(故障类型 / 常用位置),按行存储
     public static final String OPTION_CATEGORIES = "option.categories";
     public static final String OPTION_LOCATIONS = "option.locations";
+    // 常见问题自助(JSON) / 超时预警小时数
+    public static final String OPTION_FAQS = "option.faqs";
+    public static final String OPTION_OVERDUE_HOURS = "option.overdue-hours";
+    public static final int DEFAULT_OVERDUE_HOURS = 24;
 
     @Transactional(readOnly = true)
     public String get(String key, String defaultValue) {
@@ -77,6 +85,53 @@ public class SettingService {
     @Transactional
     public void setLocations(List<String> items) {
         set(OPTION_LOCATIONS, joinLines(items));
+    }
+
+    /** 常见问题自助 */
+    @Transactional(readOnly = true)
+    public List<Faq> getFaqs() {
+        String raw = get(OPTION_FAQS, null);
+        if (!StringUtils.hasText(raw)) return new ArrayList<>();
+        try {
+            return objectMapper.readValue(raw, new TypeReference<List<Faq>>() {});
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    @Transactional
+    public void setFaqs(List<Faq> faqs) {
+        List<Faq> clean = new ArrayList<>();
+        if (faqs != null) {
+            for (Faq f : faqs) {
+                if (f != null && StringUtils.hasText(f.q())) {
+                    clean.add(new Faq(f.q().trim(), f.a() == null ? "" : f.a().trim()));
+                }
+            }
+        }
+        try {
+            set(OPTION_FAQS, objectMapper.writeValueAsString(clean));
+        } catch (Exception e) {
+            throw new RuntimeException("保存常见问题失败: " + e.getMessage(), e);
+        }
+    }
+
+    /** 超时预警小时数(工单待处理/处理中超过该时长即视为超时);未配置用默认 24 */
+    @Transactional(readOnly = true)
+    public int getOverdueHours() {
+        String raw = get(OPTION_OVERDUE_HOURS, null);
+        if (!StringUtils.hasText(raw)) return DEFAULT_OVERDUE_HOURS;
+        try {
+            int v = Integer.parseInt(raw.trim());
+            return v > 0 ? v : DEFAULT_OVERDUE_HOURS;
+        } catch (NumberFormatException e) {
+            return DEFAULT_OVERDUE_HOURS;
+        }
+    }
+
+    @Transactional
+    public void setOverdueHours(int hours) {
+        set(OPTION_OVERDUE_HOURS, String.valueOf(hours > 0 ? hours : DEFAULT_OVERDUE_HOURS));
     }
 
     private List<String> splitLines(String raw) {

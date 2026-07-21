@@ -41,6 +41,7 @@ public class PublicController {
         return Map.of(
                 "categories", settingService.getCategories(),
                 "locations", settingService.getLocations(),
+                "faqs", settingService.getFaqs(),
                 "statuses", props.getStatuses(),
                 "urgencies", props.getUrgencies(),
                 "registerNeedsInvite", true

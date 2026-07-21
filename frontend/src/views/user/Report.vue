@@ -2,6 +2,16 @@
   <div class="u-page">
     <div v-if="!submitted">
       <h2 class="u-title">我要报修</h2>
+
+      <el-card v-if="faqs.length" shadow="never" style="margin-bottom:14px">
+        <div style="font-weight:700;color:var(--brand);margin-bottom:6px">💡 常见问题自助(先看看能否自己解决)</div>
+        <el-collapse>
+          <el-collapse-item v-for="(f, i) in faqs" :key="i" :title="f.q" :name="i">
+            <div style="color:#6b6156;white-space:pre-wrap;line-height:1.7">{{ f.a }}</div>
+          </el-collapse-item>
+        </el-collapse>
+      </el-card>
+
       <el-card>
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" size="large">
           <el-form-item label="报修人" prop="reporter">
@@ -71,6 +81,7 @@ import { getConfig, submitTicket } from '../../api'
 const formRef = ref()
 const categories = ref([])
 const locations = ref([])
+const faqs = ref([])
 const loading = ref(false)
 const submitted = ref(false)
 const resultCode = ref('')
@@ -96,6 +107,7 @@ onMounted(async () => {
     const cfg = await getConfig()
     categories.value = cfg.categories || []
     locations.value = cfg.locations || []
+    faqs.value = cfg.faqs || []
   } catch (e) { /* ignore */ }
 })
 
