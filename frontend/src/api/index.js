@@ -60,6 +60,19 @@ export const createUser = (data) => api.post('/admin/users', data)
 export const setUserEnabled = (id, enabled) => api.patch('/admin/users/' + id, { enabled })
 export const deleteUser = (id) => api.delete('/admin/users/' + id)
 
+// ---- 管理端:老师账号管理 ----
+export const listAppUsers = () => api.get('/admin/app-users')
+export const setAppUserEnabled = (id, enabled) => api.patch('/admin/app-users/' + id, { enabled })
+export const resetAppUserPassword = (id, newPassword) => api.post('/admin/app-users/' + id + '/reset-password', { newPassword })
+export const promoteAppUser = (id) => api.post('/admin/app-users/' + id + '/promote')
+export const deleteAppUser = (id) => api.delete('/admin/app-users/' + id)
+
+// ---- 管理端:注册邀请码 ----
+export const listInviteCodes = () => api.get('/admin/invite-codes')
+export const createInviteCode = (data) => api.post('/admin/invite-codes', data)
+export const setInviteCodeEnabled = (id, enabled) => api.patch('/admin/invite-codes/' + id, { enabled })
+export const deleteInviteCode = (id) => api.delete('/admin/invite-codes/' + id)
+
 // ---- 管理端工单/统计/设置 ----
 export const listTickets = (params) => api.get('/admin/tickets', { params })
 export const getTicket = (id) => api.get('/admin/tickets/' + id)

@@ -125,16 +125,9 @@ public class TicketService {
                 ));
             }
             // 仅对数据查询设置排序(计数查询结果类型为 Long,跳过)
+            // 最新提交的工单排在最上面(按 id 倒序,id 随创建时间递增)
             if (Ticket.class.equals(query.getResultType())) {
-                var statusOrder = cb.<Integer>selectCase()
-                        .when(cb.equal(root.get("status"), "待处理"), 0)
-                        .when(cb.equal(root.get("status"), "处理中"), 1)
-                        .when(cb.equal(root.get("status"), "已解决"), 2)
-                        .otherwise(3);
-                var urgencyOrder = cb.<Integer>selectCase()
-                        .when(cb.equal(root.get("urgency"), "紧急"), 0)
-                        .otherwise(1);
-                query.orderBy(cb.asc(statusOrder), cb.asc(urgencyOrder), cb.desc(root.get("id")));
+                query.orderBy(cb.desc(root.get("id")));
             }
             return cb.and(ps.toArray(new Predicate[0]));
         };

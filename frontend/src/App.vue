@@ -34,9 +34,9 @@ async function install() {
 <style>
 .pwa-install {
   position: fixed; right: 16px; bottom: 76px; z-index: 999;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+  background: linear-gradient(135deg, #a4232a, #7a1519); color: #fdf6e8;
   padding: 10px 16px; border-radius: 999px; font-size: 14px; font-weight: 600;
-  box-shadow: 0 8px 20px rgba(99,102,241,.4); cursor: pointer;
+  box-shadow: 0 8px 20px rgba(122,21,25,.4); cursor: pointer;
   display: flex; align-items: center; gap: 8px;
 }
 .pwa-install .pwa-close { opacity: .8; font-size: 12px; padding-left: 4px; }

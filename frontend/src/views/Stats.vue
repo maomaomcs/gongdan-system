@@ -7,7 +7,7 @@
       <el-col :xs="24" :sm="8" class="stat-col">
         <el-card class="stat-card">
           <div style="display:flex;align-items:center;gap:14px">
-            <div class="stat-ic" style="background:#eef2ff">📦</div>
+            <div class="stat-ic" style="background:#f6e9ea">📦</div>
             <div><div class="num">{{ stats.total }}</div><div class="lbl">工单总数</div></div>
           </div>
         </el-card>
@@ -65,7 +65,7 @@ const categoryOpt = ref({})
 const locationOpt = ref({})
 const monthOpt = ref({})
 
-const PALETTE = ['#6366f1', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#a855f7']
+const PALETTE = ['#a4232a', '#b8863b', '#c9302c', '#7a1519', '#d8b463', '#8a6d3b', '#5a7d5a', '#a05a2c', '#6b6156']
 
 function barOption(title, buckets, color) {
   const names = buckets.map((b) => b.name)
@@ -101,15 +101,15 @@ onMounted(async () => {
         label: { formatter: '{b}\n{c}' },
       }],
     }
-    categoryOpt.value = barOption('按故障类型(哪类最多)', s.byCategory, '#6366f1')
-    locationOpt.value = barOption('按位置/教室(哪里最坏)', s.byLocation, '#f59e0b')
+    categoryOpt.value = barOption('按故障类型(哪类最多)', s.byCategory, '#a4232a')
+    locationOpt.value = barOption('按位置/教室(哪里最坏)', s.byLocation, '#b8863b')
     monthOpt.value = {
       title: { text: '按月份趋势', left: 'center', textStyle: { fontSize: 15 } },
       tooltip: { trigger: 'axis' },
       grid: { left: 10, right: 24, bottom: 10, top: 46, containLabel: true },
       xAxis: { type: 'category', data: s.byMonth.map((b) => b.name) },
       yAxis: { type: 'value', minInterval: 1 },
-      series: [{ type: 'bar', data: s.byMonth.map((b) => b.count), barMaxWidth: 40, itemStyle: { color: '#10b981', borderRadius: [6, 6, 0, 0] } }],
+      series: [{ type: 'bar', data: s.byMonth.map((b) => b.count), barMaxWidth: 40, itemStyle: { color: '#7a1519', borderRadius: [6, 6, 0, 0] } }],
     }
   } catch (e) {
     ElMessage.error(e.message)

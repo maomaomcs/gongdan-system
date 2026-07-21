@@ -2,9 +2,10 @@
   <div class="auth-wrap">
     <div class="auth-card" style="max-width:400px">
       <div class="auth-header">
-        <div class="logo">🔐</div>
-        <h1>管理员登录</h1>
-        <p>工单管理后台</p>
+        <div class="logo">石</div>
+        <h1>石室联中 · 报修后台</h1>
+        <p>后勤报修管理 · 管理员登录</p>
+        <span class="motto">爱国利民</span>
       </div>
       <el-card>
         <el-input v-model="username" size="large" placeholder="用户名" :prefix-icon="User" style="margin-bottom:14px" @keyup.enter="doLogin" />

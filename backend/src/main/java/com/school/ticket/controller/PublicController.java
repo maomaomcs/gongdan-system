@@ -40,7 +40,8 @@ public class PublicController {
         return Map.of(
                 "categories", props.getCategories(),
                 "statuses", props.getStatuses(),
-                "urgencies", props.getUrgencies()
+                "urgencies", props.getUrgencies(),
+                "registerNeedsInvite", true
         );
     }
 

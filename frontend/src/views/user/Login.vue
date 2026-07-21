@@ -2,9 +2,10 @@
   <div class="auth-wrap">
     <div class="auth-card">
       <div class="auth-header">
-        <div class="logo">🛠️</div>
-        <h1>设备报修</h1>
+        <div class="logo">石</div>
+        <h1>石室联中 · 后勤报修</h1>
         <p>登录后即可报修、随时查看进度</p>
+        <span class="motto">爱国利民</span>
       </div>
       <el-card>
         <el-input v-model="username" size="large" placeholder="用户名" :prefix-icon="User" style="margin-bottom:14px" @keyup.enter="doLogin" />

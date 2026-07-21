@@ -2,9 +2,10 @@
   <div class="auth-wrap">
     <div class="auth-card">
       <div class="auth-header">
-        <div class="logo">🛠️</div>
-        <h1>注册账号</h1>
+        <div class="logo">石</div>
+        <h1>石室联中 · 注册</h1>
         <p>注册后报修记录会保存在你的账号下</p>
+        <span class="motto">爱国利民</span>
       </div>
       <el-card>
         <el-form :model="form" label-position="top">
@@ -19,6 +20,9 @@
           </el-form-item>
           <el-form-item label="密码" required>
             <el-input v-model="form.password" type="password" show-password placeholder="至少6位" />
+          </el-form-item>
+          <el-form-item label="邀请码" required>
+            <el-input v-model="form.inviteCode" placeholder="向管理员/后勤处索取" style="text-transform:uppercase" />
           </el-form-item>
           <el-button type="primary" size="large" style="width:100%" :loading="loading" @click="doRegister">注册并登录</el-button>
           <div style="text-align:center;margin-top:14px">
@@ -37,16 +41,18 @@ import { ElMessage } from 'element-plus'
 import { userRegister } from '../../api'
 
 const router = useRouter()
-const form = reactive({ username: '', displayName: '', phone: '', password: '' })
+const form = reactive({ username: '', displayName: '', phone: '', password: '', inviteCode: '' })
 const loading = ref(false)
 
 async function doRegister() {
   if (!form.username || !form.password || !form.displayName) return ElMessage.warning('用户名、姓名、密码必填')
+  if (!form.inviteCode) return ElMessage.warning('请填写邀请码')
   loading.value = true
   try {
     const r = await userRegister({
       username: form.username.trim(), password: form.password,
       displayName: form.displayName.trim(), phone: form.phone.trim(),
+      inviteCode: form.inviteCode.trim().toUpperCase(),
     })
     localStorage.setItem('user_token', r.token)
     localStorage.setItem('user_name', r.displayName || r.username)
