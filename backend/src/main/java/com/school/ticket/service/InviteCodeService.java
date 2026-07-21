@@ -1,16 +1,19 @@
 package com.school.ticket.service;
 
+import com.school.ticket.dto.PageResponse;
 import com.school.ticket.entity.InviteCode;
 import com.school.ticket.repository.InviteCodeRepository;
 import com.school.ticket.web.ApiException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.security.SecureRandom;
-import java.util.Comparator;
-import java.util.List;
 
 /** 注册邀请码(校验码)管理 */
 @Service
@@ -23,10 +26,19 @@ public class InviteCodeService {
     private static final char[] ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789".toCharArray();
 
     @Transactional(readOnly = true)
-    public List<InviteCode> list() {
-        return repo.findAll().stream()
-                .sorted(Comparator.comparing(InviteCode::getId).reversed())
-                .toList();
+    public PageResponse<InviteCode> listPaged(String keyword, int page, int size) {
+        Specification<InviteCode> spec = (root, query, cb) -> {
+            if (!StringUtils.hasText(keyword)) return cb.conjunction();
+            String kw = "%" + keyword.trim() + "%";
+            return cb.or(
+                    cb.like(root.get("code"), kw),
+                    cb.like(root.get("note"), kw)
+            );
+        };
+        int s = size <= 0 ? 20 : Math.min(size, 100);
+        Page<InviteCode> p = repo.findAll(spec,
+                PageRequest.of(Math.max(page, 0), s, Sort.by(Sort.Direction.DESC, "id")));
+        return PageResponse.of(p);
     }
 
     /** 生成一个新的邀请码 */

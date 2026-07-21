@@ -1,6 +1,7 @@
 package com.school.ticket.service;
 
 import com.school.ticket.dto.AppUserResponse;
+import com.school.ticket.dto.PageResponse;
 import com.school.ticket.dto.UserAuthRequest;
 import com.school.ticket.entity.AdminUser;
 import com.school.ticket.entity.AppUser;
@@ -9,13 +10,14 @@ import com.school.ticket.repository.AppUserRepository;
 import com.school.ticket.web.ApiException;
 import com.school.ticket.web.TokenStore;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
-import java.util.Comparator;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -65,11 +67,20 @@ public class AppUserService {
     // ---------- 管理端:老师账号管理 ----------
 
     @Transactional(readOnly = true)
-    public List<AppUserResponse> list() {
-        return repo.findAll().stream()
-                .sorted(Comparator.comparing(AppUser::getId).reversed())
-                .map(u -> AppUserResponse.from(u, adminRepo.existsByUsername(u.getUsername())))
-                .toList();
+    public PageResponse<AppUserResponse> listPaged(String keyword, int page, int size) {
+        Specification<AppUser> spec = (root, query, cb) -> {
+            if (!StringUtils.hasText(keyword)) return cb.conjunction();
+            String kw = "%" + keyword.trim() + "%";
+            return cb.or(
+                    cb.like(root.get("username"), kw),
+                    cb.like(root.get("displayName"), kw),
+                    cb.like(root.get("phone"), kw)
+            );
+        };
+        int s = size <= 0 ? 20 : Math.min(size, 100);
+        Page<AppUser> p = repo.findAll(spec,
+                PageRequest.of(Math.max(page, 0), s, Sort.by(Sort.Direction.DESC, "id")));
+        return PageResponse.of(p.map(u -> AppUserResponse.from(u, adminRepo.existsByUsername(u.getUsername()))));
     }
 
     @Transactional

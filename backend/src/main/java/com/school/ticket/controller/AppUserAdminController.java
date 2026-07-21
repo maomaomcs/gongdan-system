@@ -1,11 +1,11 @@
 package com.school.ticket.controller;
 
 import com.school.ticket.dto.AppUserResponse;
+import com.school.ticket.dto.PageResponse;
 import com.school.ticket.service.AppUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /** 老师(报修用户)账号管理(需管理员登录) */
@@ -16,10 +16,13 @@ public class AppUserAdminController {
 
     private final AppUserService appUserService;
 
-    /** 老师账号列表 */
+    /** 老师账号列表(分页 + 关键词搜索:用户名/姓名/联系方式) */
     @GetMapping
-    public List<AppUserResponse> list() {
-        return appUserService.list();
+    public PageResponse<AppUserResponse> list(
+            @RequestParam(required = false, name = "q") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return appUserService.listPaged(keyword, page, size);
     }
 
     /** 启用 / 停用 */

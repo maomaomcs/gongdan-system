@@ -40,8 +40,12 @@
       <el-tab-pane label="老师账号" name="teacher">
         <el-card style="margin-bottom:16px">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-            <span style="color:var(--ink-2)">共 {{ teachers.length }} 个老师账号</span>
-            <el-button :icon="Refresh" @click="loadTeachers">刷新</el-button>
+            <span style="color:var(--ink-2)">共 {{ teacherTotal }} 个老师账号</span>
+            <div style="display:flex;gap:8px">
+              <el-input v-model="teacherQ" placeholder="搜姓名/用户名/联系方式" clearable
+                :prefix-icon="Search" style="width:220px" @keyup.enter="searchTeachers" @clear="searchTeachers" />
+              <el-button type="primary" @click="searchTeachers">搜索</el-button>
+            </div>
           </div>
         </el-card>
         <el-card>
@@ -69,7 +73,12 @@
               </template>
             </el-table-column>
           </el-table>
-          <el-empty v-if="!loadingTeacher && !teachers.length" description="还没有老师注册" />
+          <el-empty v-if="!loadingTeacher && !teachers.length" description="没有匹配的老师账号" />
+          <div v-if="teacherTotal > teacherSize" style="margin-top:14px;display:flex;justify-content:flex-end">
+            <el-pagination background layout="prev, pager, next" :small="isMobile"
+              :total="teacherTotal" :page-size="teacherSize" :current-page="teacherPage"
+              @current-change="onTeacherPage" />
+          </div>
         </el-card>
       </el-tab-pane>
 
@@ -78,7 +87,11 @@
         <el-card style="margin-bottom:16px">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
             <span style="color:var(--ink-2)">老师注册时需填写有效邀请码</span>
-            <el-button type="primary" :icon="Plus" @click="genDialog = true">生成邀请码</el-button>
+            <div style="display:flex;gap:8px">
+              <el-input v-model="codeQ" placeholder="搜邀请码/备注" clearable
+                :prefix-icon="Search" style="width:200px" @keyup.enter="searchCodes" @clear="searchCodes" />
+              <el-button type="primary" :icon="Plus" @click="genDialog = true">生成邀请码</el-button>
+            </div>
           </div>
         </el-card>
         <el-card>
@@ -110,7 +123,12 @@
               </template>
             </el-table-column>
           </el-table>
-          <el-empty v-if="!loadingCode && !codes.length" description="还没有邀请码,点右上角生成" />
+          <el-empty v-if="!loadingCode && !codes.length" description="没有匹配的邀请码" />
+          <div v-if="codeTotal > codeSize" style="margin-top:14px;display:flex;justify-content:flex-end">
+            <el-pagination background layout="prev, pager, next" :small="isMobile"
+              :total="codeTotal" :page-size="codeSize" :current-page="codePage"
+              @current-change="onCodePage" />
+          </div>
         </el-card>
       </el-tab-pane>
     </el-tabs>
@@ -186,7 +204,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Refresh, CopyDocument } from '@element-plus/icons-vue'
+import { Plus, Search, CopyDocument } from '@element-plus/icons-vue'
 import {
   listUsers, createUser, setUserEnabled, deleteUser, changePassword,
   listAppUsers, setAppUserEnabled, resetAppUserPassword, promoteAppUser, deleteAppUser,
@@ -245,16 +263,25 @@ async function doChangePwd() {
 /* ---- 老师账号 ---- */
 const teachers = ref([])
 const loadingTeacher = ref(false)
+const teacherQ = ref('')
+const teacherPage = ref(1)
+const teacherSize = ref(10)
+const teacherTotal = ref(0)
 const resetDialog = ref(false)
 const resetTarget = ref(null)
 const resetPwd = ref('')
 
 async function loadTeachers() {
   loadingTeacher.value = true
-  try { teachers.value = await listAppUsers() }
-  catch (e) { ElMessage.error(e.message) }
+  try {
+    const r = await listAppUsers({ q: teacherQ.value.trim(), page: teacherPage.value - 1, size: teacherSize.value })
+    teachers.value = r.list
+    teacherTotal.value = r.total
+  } catch (e) { ElMessage.error(e.message) }
   finally { loadingTeacher.value = false }
 }
+function searchTeachers() { teacherPage.value = 1; loadTeachers() }
+function onTeacherPage(p) { teacherPage.value = p; loadTeachers() }
 async function toggleTeacher(row, v) {
   try { await setAppUserEnabled(row.id, v); row.enabled = v; ElMessage.success('已' + (v ? '启用' : '停用')) }
   catch (e) { ElMessage.error(e.message); loadTeachers() }
@@ -284,21 +311,30 @@ async function removeTeacher(row) {
 /* ---- 邀请码 ---- */
 const codes = ref([])
 const loadingCode = ref(false)
+const codeQ = ref('')
+const codePage = ref(1)
+const codeSize = ref(10)
+const codeTotal = ref(0)
 const genDialog = ref(false)
 const genForm = reactive({ note: '', maxUses: 0 })
 
 async function loadCodes() {
   loadingCode.value = true
-  try { codes.value = await listInviteCodes() }
-  catch (e) { ElMessage.error(e.message) }
+  try {
+    const r = await listInviteCodes({ q: codeQ.value.trim(), page: codePage.value - 1, size: codeSize.value })
+    codes.value = r.list
+    codeTotal.value = r.total
+  } catch (e) { ElMessage.error(e.message) }
   finally { loadingCode.value = false }
 }
+function searchCodes() { codePage.value = 1; loadCodes() }
+function onCodePage(p) { codePage.value = p; loadCodes() }
 async function doGen() {
   saving.value = true
   try {
     await createInviteCode({ note: genForm.note.trim(), maxUses: genForm.maxUses })
     ElMessage.success('邀请码已生成'); genDialog.value = false
-    genForm.note = ''; genForm.maxUses = 0; loadCodes()
+    genForm.note = ''; genForm.maxUses = 0; codePage.value = 1; loadCodes()
   } catch (e) { ElMessage.error(e.message) } finally { saving.value = false }
 }
 async function toggleCode(row, v) {

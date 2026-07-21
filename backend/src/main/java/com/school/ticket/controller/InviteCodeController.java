@@ -1,11 +1,11 @@
 package com.school.ticket.controller;
 
+import com.school.ticket.dto.PageResponse;
 import com.school.ticket.entity.InviteCode;
 import com.school.ticket.service.InviteCodeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /** 注册邀请码管理(需管理员登录) */
@@ -16,9 +16,13 @@ public class InviteCodeController {
 
     private final InviteCodeService service;
 
+    /** 邀请码列表(分页 + 关键词搜索:码/备注) */
     @GetMapping
-    public List<InviteCode> list() {
-        return service.list();
+    public PageResponse<InviteCode> list(
+            @RequestParam(required = false, name = "q") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return service.listPaged(keyword, page, size);
     }
 
     /** 生成新邀请码;body: { note, maxUses } */
