@@ -18,3 +18,10 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 app.use(ElementPlus, { locale: zhCn })
 app.use(router)
 app.mount('#app')
+
+// 注册 Service Worker(PWA:可安装到主屏、离线打开外壳)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => { /* 忽略注册失败 */ })
+  })
+}
