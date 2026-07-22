@@ -24,6 +24,7 @@ const routes = [
     children: [
       { path: '', redirect: '/admin/tickets' },
       { path: 'tickets', name: 'tickets', component: () => import('../views/Admin.vue') },
+      { path: 'assets', name: 'assets', component: () => import('../views/Assets.vue') },
       { path: 'stats', name: 'stats', component: () => import('../views/Stats.vue') },
       { path: 'users', name: 'users', component: () => import('../views/Users.vue') },
       { path: 'settings', name: 'settings', component: () => import('../views/Settings.vue') },

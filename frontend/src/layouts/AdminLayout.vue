@@ -5,6 +5,7 @@
       <div class="admin-logo"><span class="dot">石</span> 石室联中132 · 后台</div>
       <el-menu :default-active="active" background-color="#2a2320" text-color="#cabbac" active-text-color="#fdf6e8" router>
         <el-menu-item index="/admin/tickets"><el-icon><Tickets /></el-icon><span>工单管理</span></el-menu-item>
+        <el-menu-item index="/admin/assets"><el-icon><Monitor /></el-icon><span>资产台账</span></el-menu-item>
         <el-menu-item index="/admin/stats"><el-icon><DataLine /></el-icon><span>数据统计</span></el-menu-item>
         <el-menu-item index="/admin/users"><el-icon><UserFilled /></el-icon><span>账号管理</span></el-menu-item>
         <el-menu-item index="/admin/settings"><el-icon><Setting /></el-icon><span>系统设置</span></el-menu-item>
@@ -16,6 +17,7 @@
       <div class="admin-logo"><span class="dot">石</span> 石室联中132 · 后台</div>
       <el-menu :default-active="active" background-color="#2a2320" text-color="#cabbac" active-text-color="#fdf6e8" router @select="drawer = false">
         <el-menu-item index="/admin/tickets"><el-icon><Tickets /></el-icon><span>工单管理</span></el-menu-item>
+        <el-menu-item index="/admin/assets"><el-icon><Monitor /></el-icon><span>资产台账</span></el-menu-item>
         <el-menu-item index="/admin/stats"><el-icon><DataLine /></el-icon><span>数据统计</span></el-menu-item>
         <el-menu-item index="/admin/users"><el-icon><UserFilled /></el-icon><span>账号管理</span></el-menu-item>
         <el-menu-item index="/admin/settings"><el-icon><Setting /></el-icon><span>系统设置</span></el-menu-item>

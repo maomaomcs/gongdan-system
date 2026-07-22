@@ -88,6 +88,32 @@ export const testDingNotify = () => api.post('/admin/settings/ding/test')
 export const getOptions = () => api.get('/admin/settings/options')
 export const saveOptions = (data) => api.put('/admin/settings/options', data)
 
+// ---- 管理端:IT 资产台账 ----
+export const listAssets = (params) => api.get('/admin/assets', { params })
+export const getAsset = (id) => api.get('/admin/assets/' + id)
+export const createAsset = (data) => api.post('/admin/assets', data)
+export const updateAsset = (id, data) => api.put('/admin/assets/' + id, data)
+export const deleteAsset = (id) => api.delete('/admin/assets/' + id)
+export const getAssetStats = () => api.get('/admin/assets/stats')
+
+export async function exportAssetsExcel(params) {
+  const token = localStorage.getItem('admin_token')
+  const qs = new URLSearchParams(
+    Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v !== '' && v != null))
+  ).toString()
+  const res = await fetch('/api/admin/assets/export' + (qs ? '?' + qs : ''), {
+    headers: { Authorization: 'Bearer ' + token },
+  })
+  if (!res.ok) throw new Error('导出失败')
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'IT资产台账_' + new Date().toISOString().slice(0, 10) + '.xlsx'
+  document.body.appendChild(a); a.click(); a.remove()
+  URL.revokeObjectURL(url)
+}
+
 export async function exportTicketsExcel(params) {
   const token = localStorage.getItem('admin_token')
   const qs = new URLSearchParams(params).toString()
