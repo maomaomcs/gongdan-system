@@ -132,7 +132,7 @@ const saving = ref(false)
 const newLog = ref('')
 
 function statusType(s) {
-  return { 待处理: 'warning', 处理中: 'primary', 已解决: 'success', 已关闭: 'info' }[s] || 'info'
+  return { 待处理: 'warning', 处理中: 'primary', 已解决: 'success', 已关闭: 'info', 已取消: 'info' }[s] || 'info'
 }
 function rowClass({ row }) { return row.overdue ? 'overdue-row' : '' }
 

@@ -75,6 +75,18 @@ public class DingTalkNotifier {
         });
     }
 
+    /** 取消通知(异步) */
+    public void notifyCancelAsync(Ticket t) {
+        if (!settings.getBool(SettingService.DING_ENABLED)) return;
+        pool.submit(() -> {
+            try {
+                sendMarkdown("🚫 报修已取消 · " + t.getCode(), buildCancelMd(t));
+            } catch (Exception e) {
+                log.warn("钉钉取消通知发送失败: {}", e.getMessage());
+            }
+        });
+    }
+
     /** 发送测试消息(同步,返回结果,供后台"发送测试"按钮调用) */
     public void sendTest() {
         String md = header("✅ 通知测试", "#52C41A")
@@ -117,6 +129,18 @@ public class DingTalkNotifier {
         sb.append(divider());
         String since = t.getCreatedAt() == null ? "" : t.getCreatedAt().format(TS) + " 提交 · ";
         sb.append(quote("⚠️ " + since + "报修人正在催单,请尽快处理 🙏"));
+        return sb.toString();
+    }
+
+    private String buildCancelMd(Ticket t) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(header("🚫 报修已取消", C_GRAY));
+        sb.append(row("🎫 工单号", "`" + t.getCode() + "`"));
+        sb.append(row("👤 报修人", reporterText(t)));
+        sb.append(row("📍 位置", safe(t.getLocation())));
+        sb.append(row("📝 问题", safe(t.getTitle())));
+        sb.append(divider());
+        sb.append(quote("报修人已取消该报修,无需再处理"));
         return sb.toString();
     }
 

@@ -113,6 +113,31 @@ public class TicketService {
         return withLogs(t);
     }
 
+    /** 报修人取消报修:仅本人,且仅在"待处理"(未被后勤接手)时可取消 */
+    @Transactional
+    public TicketResponse cancelByUser(Long id, Long userId) {
+        Ticket t = ticketRepo.findById(id)
+                .orElseThrow(() -> new ApiException(404, "工单不存在"));
+        if (!userId.equals(t.getUserId())) {
+            throw new ApiException(403, "无权操作该工单");
+        }
+        if (!"待处理".equals(t.getStatus())) {
+            throw new ApiException(400, "工单已被后勤接手或已处理,无法取消,请联系后勤");
+        }
+        t.setStatus("已取消");
+        ticketRepo.save(t);
+
+        TicketLog entry = new TicketLog();
+        entry.setTicketId(t.getId());
+        entry.setContent("报修人取消了报修");
+        entry.setAuthor(t.getReporter());
+        logRepo.save(entry);
+
+        dingTalkNotifier.notifyCancelAsync(t); // 通知后勤群:已取消
+
+        return withLogs(t);
+    }
+
     // ---------- 查询(公开,按工单号) ----------
     @Transactional(readOnly = true)
     public TicketResponse getByCode(String code) {

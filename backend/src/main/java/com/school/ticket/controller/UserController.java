@@ -97,6 +97,12 @@ public class UserController {
         return ticketService.urge(id, currentUser(request).getId());
     }
 
+    /** 取消报修(报错了自己撤销,仅"待处理"时可取消) */
+    @PostMapping("/user/tickets/{id}/cancel")
+    public TicketResponse cancel(@PathVariable Long id, HttpServletRequest request) {
+        return ticketService.cancelByUser(id, currentUser(request).getId());
+    }
+
     // ---------- 辅助 ----------
     private AppUser currentUser(HttpServletRequest request) {
         return appUserService.getByUsername(tokenStore.currentUsername(request));

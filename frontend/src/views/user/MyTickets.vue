@@ -29,11 +29,15 @@
           <span>{{ t.location }}</span>
           <span class="ti-code">{{ t.code }}</span>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:8px">
           <span class="ti-time">{{ t.createdAt }}</span>
-          <el-button v-if="canUrge(t)" size="small" type="warning" plain :loading="urging === t.id"
-            @click.stop="urge(t)">催一下{{ t.urgeCount > 0 ? '(已催' + t.urgeCount + ')' : '' }}</el-button>
-          <span v-else-if="t.urgeCount > 0" style="font-size:12px;color:#b8863b">已催 {{ t.urgeCount }} 次</span>
+          <div style="display:flex;gap:8px">
+            <el-button v-if="t.status === '待处理'" size="small" plain :loading="canceling === t.id"
+              @click.stop="cancel(t)">取消报修</el-button>
+            <el-button v-if="canUrge(t)" size="small" type="warning" plain :loading="urging === t.id"
+              @click.stop="urge(t)">催一下{{ t.urgeCount > 0 ? '(已催' + t.urgeCount + ')' : '' }}</el-button>
+            <span v-else-if="t.urgeCount > 0" style="font-size:12px;color:#b8863b;align-self:center">已催 {{ t.urgeCount }} 次</span>
+          </div>
         </div>
       </el-card>
 
@@ -78,11 +82,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getMyTickets, getMyTicket, urgeTicket } from '../../api'
+import { ElMessageBox } from 'element-plus'
+import { getMyTickets, getMyTicket, urgeTicket, cancelTicket } from '../../api'
 
 const list = ref([])
 const loading = ref(false)
 const urging = ref(null)
+const canceling = ref(null)
 const show = ref(false)
 const cur = ref(null)
 const status = ref('')
@@ -92,7 +98,7 @@ const size = ref(10)
 const total = ref(0)
 
 function statusType(s) {
-  return { 待处理: 'warning', 处理中: 'primary', 已解决: 'success', 已关闭: 'info' }[s] || 'info'
+  return { 待处理: 'warning', 处理中: 'primary', 已解决: 'success', 已关闭: 'info', 已取消: 'info' }[s] || 'info'
 }
 
 async function load() {
@@ -128,6 +134,21 @@ async function urge(t) {
     ElMessage.success('已催单,后勤会尽快处理')
   } catch (e) { ElMessage.error(e.message) }
   finally { urging.value = null }
+}
+
+async function cancel(t) {
+  try {
+    await ElMessageBox.confirm('确定取消这条报修吗?(仅"待处理"的报修可取消)', '取消报修', {
+      type: 'warning', confirmButtonText: '确定取消', cancelButtonText: '再想想',
+    })
+  } catch (e) { return }
+  canceling.value = t.id
+  try {
+    const updated = await cancelTicket(t.id)
+    t.status = updated.status
+    ElMessage.success('已取消报修')
+  } catch (e) { ElMessage.error(e.message) }
+  finally { canceling.value = null }
 }
 
 onMounted(load)

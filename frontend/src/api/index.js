@@ -50,6 +50,7 @@ export const submitTicket = (data) => api.post('/user/tickets', data)
 export const getMyTickets = (params) => api.get('/user/tickets', { params })
 export const getMyTicket = (id) => api.get('/user/tickets/' + id)
 export const urgeTicket = (id) => api.post('/user/tickets/' + id + '/urge')
+export const cancelTicket = (id) => api.post('/user/tickets/' + id + '/cancel')
 
 // ---- 管理端登录/账号 ----
 export const adminLogin = (username, password) => api.post('/login', { username, password })
