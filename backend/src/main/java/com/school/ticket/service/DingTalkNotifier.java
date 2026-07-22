@@ -6,6 +6,7 @@ import com.school.ticket.web.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -18,11 +19,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** 钉钉群机器人通知 */
+/** 钉钉群机器人通知(markdown 卡片样式) */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -41,49 +43,123 @@ public class DingTalkNotifier {
 
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    // 品牌色
+    private static final String C_RED = "#F5222D";
+    private static final String C_BLUE = "#1677FF";
+    private static final String C_ORANGE = "#FA8C16";
+    private static final String C_GRAY = "#8C8C8C";
+
     /** 新工单通知(异步,不阻塞、不抛错) */
     public void notifyNewTicketAsync(Ticket t) {
         if (!settings.getBool(SettingService.DING_ENABLED)) return;
         pool.submit(() -> {
             try {
-                send(buildNewTicketText(t));
+                boolean urgent = "紧急".equals(t.getUrgency());
+                String title = (urgent ? "🔴 紧急报修" : "🔧 新报修工单") + " · " + t.getCode();
+                sendMarkdown(title, buildNewTicketMd(t));
             } catch (Exception e) {
-                log.warn("钉钉通知发送失败: {}", e.getMessage());
+                log.warn("钉钉新工单通知发送失败: {}", e.getMessage());
+            }
+        });
+    }
+
+    /** 催单通知(异步) */
+    public void notifyUrgeAsync(Ticket t) {
+        if (!settings.getBool(SettingService.DING_ENABLED)) return;
+        pool.submit(() -> {
+            try {
+                sendMarkdown("📣 催单提醒 · " + t.getCode(), buildUrgeMd(t));
+            } catch (Exception e) {
+                log.warn("钉钉催单通知发送失败: {}", e.getMessage());
             }
         });
     }
 
     /** 发送测试消息(同步,返回结果,供后台"发送测试"按钮调用) */
     public void sendTest() {
-        String kw = settings.get(SettingService.DING_KEYWORD, "");
-        String text = (kw.isEmpty() ? "" : kw + " ") + "【测试】校园报障工单系统 钉钉通知配置成功 ✅";
-        send(text);
+        String md = header("✅ 通知测试", "#52C41A")
+                + row("📌 系统", "石室联中 · 后勤报修")
+                + row("📶 状态", "钉钉通知配置成功")
+                + divider()
+                + quote("看到本条消息说明配置正确,可以正常接收报修提醒了");
+        sendMarkdown("✅ 钉钉通知测试", md);
     }
 
-    private String buildNewTicketText(Ticket t) {
-        String kw = settings.get(SettingService.DING_KEYWORD, "");
-        String urgentTag = "紧急".equals(t.getUrgency()) ? "🔴【紧急】" : "🔧";
+    // ---------- markdown 构建 ----------
+
+    private String buildNewTicketMd(Ticket t) {
+        boolean urgent = "紧急".equals(t.getUrgency());
         StringBuilder sb = new StringBuilder();
-        if (!kw.isEmpty()) sb.append(kw).append(' '); // 关键词安全设置需包含在正文中
-        sb.append(urgentTag).append("新报修工单\n");
-        sb.append("工单号:").append(t.getCode()).append('\n');
-        sb.append("报修人:").append(t.getReporter());
-        if (t.getContact() != null && !t.getContact().isEmpty()) sb.append(" (").append(t.getContact()).append(')');
-        sb.append('\n');
-        sb.append("位置:").append(t.getLocation()).append('\n');
-        sb.append("类型:").append(t.getCategory()).append('\n');
-        sb.append("问题:").append(t.getTitle()).append('\n');
-        if (t.getDescription() != null && !t.getDescription().isEmpty()) {
-            sb.append("详情:").append(t.getDescription()).append('\n');
+        sb.append(header(urgent ? "🔴 紧急报修工单" : "🔧 新报修工单", urgent ? C_RED : C_BLUE));
+        sb.append(row("🎫 工单号", "`" + t.getCode() + "`"));
+        sb.append(row("👤 报修人", reporterText(t)));
+        sb.append(row("📍 位置", safe(t.getLocation())));
+        sb.append(row("🏷️ 类型", safe(t.getCategory())));
+        sb.append(row("🚦 紧急度", urgent ? "<font color=\"" + C_RED + "\">紧急</font>" : "普通"));
+        sb.append(row("📝 问题", safe(t.getTitle())));
+        if (StringUtils.hasText(t.getDescription())) {
+            sb.append(row("💬 详情", safe(t.getDescription())));
         }
-        sb.append("时间:").append(t.getCreatedAt().format(TS));
+        sb.append(divider());
+        sb.append(quote("🕐 " + t.getCreatedAt().format(TS) + " 提交 · 请及时处理"));
         return sb.toString();
     }
 
-    /** 实际发送:构造签名 URL + POST text 消息 */
-    private void send(String text) {
+    private String buildUrgeMd(Ticket t) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(header("📣 催单提醒", C_ORANGE));
+        sb.append(row("🎫 工单号", "`" + t.getCode() + "`"));
+        sb.append(row("👤 报修人", reporterText(t)));
+        sb.append(row("📍 位置", safe(t.getLocation())));
+        sb.append(row("📝 问题", safe(t.getTitle())));
+        sb.append(row("📊 当前状态", safe(t.getStatus())));
+        sb.append(row("🔁 催单次数", "<font color=\"" + C_ORANGE + "\">第 " + (t.getUrgeCount() == null ? 1 : t.getUrgeCount()) + " 次</font>"));
+        sb.append(divider());
+        String since = t.getCreatedAt() == null ? "" : t.getCreatedAt().format(TS) + " 提交 · ";
+        sb.append(quote("⚠️ " + since + "报修人正在催单,请尽快处理 🙏"));
+        return sb.toString();
+    }
+
+    private String reporterText(Ticket t) {
+        String r = safe(t.getReporter());
+        if (StringUtils.hasText(t.getContact())) r += "（" + t.getContact() + "）";
+        return r;
+    }
+
+    private String header(String title, String color) {
+        return "### <font color=\"" + color + "\">" + title + "</font>\n\n";
+    }
+
+    private String row(String label, String value) {
+        return "**" + label + "**：" + value + "\n\n";
+    }
+
+    private String divider() {
+        return "\n---\n\n";
+    }
+
+    private String quote(String text) {
+        return "> <font color=\"" + C_GRAY + "\">" + text + "</font>\n";
+    }
+
+    private String safe(String s) {
+        if (s == null) return "";
+        // 转义 markdown 里会干扰排版的字符
+        return s.replace("\n", " ").replace("*", "\\*").replace("#", "\\#");
+    }
+
+    /** 实际发送:构造签名 URL + POST markdown 消息 */
+    private void sendMarkdown(String title, String markdown) {
         String webhook = settings.get(SettingService.DING_WEBHOOK, "");
         if (webhook.isEmpty()) throw new ApiException(400, "尚未配置钉钉 Webhook 地址");
+
+        String text = markdown;
+        String kw = settings.get(SettingService.DING_KEYWORD, "");
+        if (StringUtils.hasText(kw)) {
+            // 关键词安全设置:正文需包含关键词
+            if (!text.contains(kw)) text = text + "\n\n<font color=\"#BFBFBF\">" + kw + "</font>";
+            if (!title.contains(kw)) title = kw + " " + title;
+        }
 
         String url = webhook;
         String secret = settings.get(SettingService.DING_SECRET, "");
@@ -95,9 +171,12 @@ public class DingTalkNotifier {
         }
 
         try {
+            Map<String, Object> md = new LinkedHashMap<>();
+            md.put("title", title);
+            md.put("text", text);
             String body = objectMapper.writeValueAsString(Map.of(
-                    "msgtype", "text",
-                    "text", Map.of("content", text)
+                    "msgtype", "markdown",
+                    "markdown", md
             ));
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(url))

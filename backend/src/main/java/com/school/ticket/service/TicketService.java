@@ -108,6 +108,8 @@ public class TicketService {
         entry.setAuthor(t.getReporter());
         logRepo.save(entry);
 
+        dingTalkNotifier.notifyUrgeAsync(t); // 催单也推钉钉
+
         return withLogs(t);
     }
 
