@@ -11,7 +11,7 @@ set -euo pipefail
 
 # -------- 可按实际环境调整 --------
 REPO_URL="https://github.com/maomaomcs/gongdan-system.git"
-GIT_MIRROR="https://gitclone.com/github.com/maomaomcs/gongdan-system.git"  # GitHub 连不上时的国内镜像
+GIT_MIRROR="https://kkgithub.com/maomaomcs/gongdan-system.git"  # GitHub 连不上时的国内镜像(kkgithub)
 REPO_DIR="/opt/ticket-system/gongdan-system"   # 服务器上代码存放目录
 APP_JAR="/opt/ticket-system/app.jar"           # systemd ExecStart 指向的 jar
 SERVICE="ticket-system"
