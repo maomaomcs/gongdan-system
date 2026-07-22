@@ -11,6 +11,7 @@ set -euo pipefail
 
 # -------- 可按实际环境调整 --------
 REPO_URL="https://github.com/maomaomcs/gongdan-system.git"
+GIT_MIRROR="https://gitclone.com/github.com/maomaomcs/gongdan-system.git"  # GitHub 连不上时的国内镜像
 REPO_DIR="/opt/ticket-system/gongdan-system"   # 服务器上代码存放目录
 APP_JAR="/opt/ticket-system/app.jar"           # systemd ExecStart 指向的 jar
 SERVICE="ticket-system"
@@ -31,15 +32,31 @@ log "环境检查通过 · java $($JDK_HOME/bin/java -version 2>&1 | head -n1)"
 
 # 1. 拉取代码(部署机为纯构建用,强制与远端 main 对齐)
 # 注:CentOS7 自带 git 1.8 不支持 `git -C`,故先 cd 再执行
+# 国内服务器连 GitHub 常不稳定,故带 3 次重试 + 自动切镜像
+fetch_retry() {
+  local n=0
+  until git fetch --all --prune; do
+    n=$((n + 1)); [ $n -ge 3 ] && return 1
+    log "拉取失败,3 秒后重试($n/3)..."; sleep 3
+  done
+}
 if [ -d "$REPO_DIR/.git" ]; then
   log "更新代码:$REPO_DIR"
   cd "$REPO_DIR"
-  git fetch --all --prune
+  if ! fetch_retry; then
+    if [ -n "$GIT_MIRROR" ]; then
+      log "GitHub 连接失败,切换国内镜像:$GIT_MIRROR"
+      git remote set-url origin "$GIT_MIRROR"
+      fetch_retry || { err "拉取失败(GitHub 与镜像均不可用),请检查网络"; exit 1; }
+    else
+      err "拉取失败,请检查网络"; exit 1
+    fi
+  fi
   git reset --hard origin/main
 else
   log "首次克隆代码到:$REPO_DIR"
   mkdir -p "$(dirname "$REPO_DIR")"
-  git clone "$REPO_URL" "$REPO_DIR"
+  git clone "$REPO_URL" "$REPO_DIR" || git clone "$GIT_MIRROR" "$REPO_DIR"
   cd "$REPO_DIR"
 fi
 COMMIT=$(git rev-parse --short HEAD)
