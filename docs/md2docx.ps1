@@ -135,8 +135,44 @@ try {
       $i++; continue
     }
 
+    # 图片 ![alt](path)
+    if ($line -match '^\s*!\[.*?\]\((.+?)\)\s*$') {
+      $imgRel = $matches[1]
+      $imgPath = $imgRel
+      if (-not [System.IO.Path]::IsPathRooted($imgPath)) {
+        $imgPath = Join-Path (Split-Path (Resolve-Path $In)) $imgRel
+      }
+      if (Test-Path $imgPath) {
+        $sel.ParagraphFormat.Alignment = 1  # 居中
+        $shape = $sel.InlineShapes.AddPicture((Resolve-Path $imgPath).Path)
+        # 限制最大宽度约 15cm(425pt),超宽等比缩小
+        $maxW = 425
+        if ($shape.Width -gt $maxW) {
+          $ratio = $maxW / $shape.Width
+          $shape.Width = $maxW
+          $shape.Height = [int]($shape.Height * $ratio)
+        }
+        $sel.TypeParagraph()
+        $sel.ParagraphFormat.Alignment = 0  # 恢复左对齐
+      } else {
+        $sel.TypeText("[缺图: $imgRel]")
+        $sel.TypeParagraph()
+      }
+      $i++; continue
+    }
+
     # 空行
     if ($line.Trim() -eq '') { $sel.TypeParagraph(); $i++; continue }
+
+    # 图注(图x-x) / 表注(表x-x) 居中
+    if ($line -match '^\s*图\d' -or $line -match '^\s*表\d') {
+      $sel.Style = $wdStyleNormal
+      $sel.ParagraphFormat.Alignment = 1
+      $sel.TypeText((Clean-Inline $line))
+      $sel.TypeParagraph()
+      $sel.ParagraphFormat.Alignment = 0
+      $i++; continue
+    }
 
     # 普通段落
     $sel.Style = $wdStyleNormal
