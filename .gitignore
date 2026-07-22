@@ -1,8 +1,10 @@
 # 构建产物
 backend/target/
-backend/src/main/resources/static/
 frontend/dist/
 frontend/node_modules/
+# 注意:backend/src/main/resources/static/ 不再忽略 —— 前端产物随代码提交,
+# 以便服务器无需 Node 也能只用 JDK 构建后端(见 deploy/update.sh)。
+# 前端改动后需在本地重新构建并提交 static。
 
 # 便携运行环境(体积大,应各自下载/解压)
 tooling/jdk-17.0.19+10/
