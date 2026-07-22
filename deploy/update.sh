@@ -30,16 +30,19 @@ command -v git >/dev/null 2>&1 || { err "未找到 git,请先安装:yum install 
 log "环境检查通过 · java $($JDK_HOME/bin/java -version 2>&1 | head -n1)"
 
 # 1. 拉取代码(部署机为纯构建用,强制与远端 main 对齐)
+# 注:CentOS7 自带 git 1.8 不支持 `git -C`,故先 cd 再执行
 if [ -d "$REPO_DIR/.git" ]; then
   log "更新代码:$REPO_DIR"
-  git -C "$REPO_DIR" fetch --all --prune
-  git -C "$REPO_DIR" reset --hard origin/main
+  cd "$REPO_DIR"
+  git fetch --all --prune
+  git reset --hard origin/main
 else
   log "首次克隆代码到:$REPO_DIR"
   mkdir -p "$(dirname "$REPO_DIR")"
   git clone "$REPO_URL" "$REPO_DIR"
+  cd "$REPO_DIR"
 fi
-COMMIT=$(git -C "$REPO_DIR" rev-parse --short HEAD)
+COMMIT=$(git rev-parse --short HEAD)
 log "当前代码版本:$COMMIT"
 
 # 2. 构建后端(前端产物已在 src/main/resources/static,随 jar 一起打包)
