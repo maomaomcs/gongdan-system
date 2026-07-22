@@ -216,6 +216,10 @@ public class TicketService {
     public TicketResponse update(Long id, UpdateTicketRequest req) {
         Ticket t = ticketRepo.findById(id)
                 .orElseThrow(() -> new ApiException(404, "工单不存在"));
+        // 已取消是报修人的最终决定,锁定不可再改
+        if ("已取消".equals(t.getStatus())) {
+            throw new ApiException(400, "该工单已被报修人取消,不能再修改");
+        }
         if (req.status() != null) {
             if (!props.getStatuses().contains(req.status()))
                 throw new ApiException(400, "非法状态");
@@ -235,6 +239,12 @@ public class TicketService {
     public Ticket updateStatusFromDing(Long id, String targetStatus, String actionLabel) {
         Ticket t = ticketRepo.findById(id)
                 .orElseThrow(() -> new ApiException(404, "工单不存在"));
+        if ("已取消".equals(t.getStatus())) {
+            throw new ApiException(400, "该工单已被报修人取消,无需再处理");
+        }
+        if ("已解决".equals(t.getStatus()) && "已解决".equals(targetStatus)) {
+            throw new ApiException(400, "该工单已是已解决状态");
+        }
         t.setStatus(targetStatus);
         if ("已解决".equals(targetStatus) && t.getResolvedAt() == null) {
             t.setResolvedAt(LocalDateTime.now());

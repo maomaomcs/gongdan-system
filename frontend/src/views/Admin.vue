@@ -76,20 +76,24 @@
         </el-descriptions>
 
         <el-divider>处理</el-divider>
-        <el-form label-position="top">
-          <el-form-item label="状态">
-            <el-select v-model="edit.status" style="width:100%">
-              <el-option v-for="s in cfg.statuses" :key="s" :label="s" :value="s" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="处理人">
-            <el-input v-model="edit.handler" placeholder="谁在处理" />
-          </el-form-item>
-          <el-form-item label="解决方案 / 备注">
-            <el-input v-model="edit.resolution" type="textarea" :rows="3" placeholder="最终如何解决的" />
-          </el-form-item>
-          <el-button type="primary" :loading="saving" @click="save">保存处理结果</el-button>
-        </el-form>
+        <el-alert v-if="current.status === '已取消'" type="info" :closable="false" show-icon
+          title="该工单已被报修人取消,不可再处理" style="margin-bottom:6px" />
+        <template v-else>
+          <el-form label-position="top">
+            <el-form-item label="状态">
+              <el-select v-model="edit.status" style="width:100%">
+                <el-option v-for="s in cfg.statuses" :key="s" :label="s" :value="s" :disabled="s === '已取消'" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="处理人">
+              <el-input v-model="edit.handler" placeholder="谁在处理" />
+            </el-form-item>
+            <el-form-item label="解决方案 / 备注">
+              <el-input v-model="edit.resolution" type="textarea" :rows="3" placeholder="最终如何解决的" />
+            </el-form-item>
+            <el-button type="primary" :loading="saving" @click="save">保存处理结果</el-button>
+          </el-form>
+        </template>
 
         <el-divider>跟进记录</el-divider>
         <el-timeline v-if="current.logs && current.logs.length">
@@ -98,7 +102,7 @@
           </el-timeline-item>
         </el-timeline>
         <el-empty v-else description="暂无跟进记录" :image-size="60" />
-        <div style="display:flex;gap:8px;margin-top:10px">
+        <div v-if="current.status !== '已取消'" style="display:flex;gap:8px;margin-top:10px">
           <el-input v-model="newLog" placeholder="添加一条跟进,如:已联系厂商" @keyup.enter="addLogItem" />
           <el-button type="primary" @click="addLogItem">添加</el-button>
         </div>
