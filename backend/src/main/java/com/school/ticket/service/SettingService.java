@@ -31,6 +31,7 @@ public class SettingService {
     public static final String DING_WEBHOOK = "ding.webhook";
     public static final String DING_SECRET = "ding.secret";
     public static final String DING_KEYWORD = "ding.keyword";
+    public static final String DING_ACTION_BASE = "ding.action-base";  // 群内按钮回调公网地址
 
     // 报修选项(故障类型 / 常用位置),按行存储
     public static final String OPTION_CATEGORIES = "option.categories";
@@ -161,6 +162,7 @@ public class SettingService {
         m.put("webhook", get(DING_WEBHOOK, ""));
         m.put("keyword", get(DING_KEYWORD, ""));
         m.put("secretSet", !get(DING_SECRET, "").isEmpty());
+        m.put("actionBase", get(DING_ACTION_BASE, ""));
         return m;
     }
 }

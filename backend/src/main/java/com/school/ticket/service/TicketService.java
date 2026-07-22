@@ -230,6 +230,24 @@ public class TicketService {
         return withLogs(t);
     }
 
+    /** 来自钉钉群按钮的状态变更(已通过签名校验) */
+    @Transactional
+    public Ticket updateStatusFromDing(Long id, String targetStatus, String actionLabel) {
+        Ticket t = ticketRepo.findById(id)
+                .orElseThrow(() -> new ApiException(404, "工单不存在"));
+        t.setStatus(targetStatus);
+        if ("已解决".equals(targetStatus) && t.getResolvedAt() == null) {
+            t.setResolvedAt(LocalDateTime.now());
+        }
+        ticketRepo.save(t);
+        TicketLog entry = new TicketLog();
+        entry.setTicketId(id);
+        entry.setContent("钉钉群操作:" + actionLabel);
+        entry.setAuthor("钉钉");
+        logRepo.save(entry);
+        return t;
+    }
+
     // ---------- 添加跟进 ----------
     @Transactional
     public TicketResponse addLog(Long id, AddLogRequest req) {

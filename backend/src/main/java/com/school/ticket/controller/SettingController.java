@@ -31,6 +31,7 @@ public class SettingController {
         settingService.set(SettingService.DING_ENABLED, String.valueOf(Boolean.TRUE.equals(req.enabled())));
         if (req.webhook() != null) settingService.set(SettingService.DING_WEBHOOK, req.webhook().trim());
         if (req.keyword() != null) settingService.set(SettingService.DING_KEYWORD, req.keyword().trim());
+        if (req.actionBase() != null) settingService.set(SettingService.DING_ACTION_BASE, req.actionBase().trim().replaceAll("/+$", ""));
         // secret:null=不动;"__CLEAR__"=清空;其他=更新
         if (req.secret() != null) {
             if ("__CLEAR__".equals(req.secret())) {

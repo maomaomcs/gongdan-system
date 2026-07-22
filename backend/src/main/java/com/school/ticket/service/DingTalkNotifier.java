@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 public class DingTalkNotifier {
 
     private final SettingService settings;
+    private final DingActionSigner signer;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5)).build();
@@ -56,7 +57,13 @@ public class DingTalkNotifier {
             try {
                 boolean urgent = "紧急".equals(t.getUrgency());
                 String title = (urgent ? "🔴 紧急报修" : "🔧 新报修工单") + " · " + t.getCode();
-                sendMarkdown(title, buildNewTicketMd(t));
+                String md = buildNewTicketMd(t);
+                java.util.List<Map<String, String>> btns = buildActionButtons(t);
+                if (btns != null) {
+                    sendActionCard(title, md, btns);
+                } else {
+                    sendMarkdown(title, md);
+                }
             } catch (Exception e) {
                 log.warn("钉钉新工单通知发送失败: {}", e.getMessage());
             }
@@ -172,18 +179,61 @@ public class DingTalkNotifier {
         return s.replace("\n", " ").replace("*", "\\*").replace("#", "\\#");
     }
 
-    /** 实际发送:构造签名 URL + POST markdown 消息 */
-    private void sendMarkdown(String title, String markdown) {
-        String webhook = settings.get(SettingService.DING_WEBHOOK, "");
-        if (webhook.isEmpty()) throw new ApiException(400, "尚未配置钉钉 Webhook 地址");
+    /** 生成群内操作按钮;未配置公网地址则返回 null(退回无按钮的普通卡片) */
+    private java.util.List<Map<String, String>> buildActionButtons(Ticket t) {
+        String base = settings.get(SettingService.DING_ACTION_BASE, "");
+        if (!StringUtils.hasText(base)) return null;
+        base = base.replaceAll("/+$", "");
+        long id = t.getId();
+        java.util.List<Map<String, String>> btns = new java.util.ArrayList<>();
+        btns.add(btn("🙋 认领", base, id, "claim"));
+        btns.add(btn("✅ 已解决", base, id, "resolve"));
+        btns.add(btn("🚫 取消", base, id, "cancel"));
+        return btns;
+    }
 
-        String text = markdown;
+    private Map<String, String> btn(String title, String base, long id, String action) {
+        String url = base + "/api/ding/act?t=" + id + "&a=" + action + "&s=" + signer.sign(id, action);
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("title", title);
+        m.put("actionURL", url);
+        return m;
+    }
+
+    /** markdown 消息 */
+    private void sendMarkdown(String title, String markdown) {
+        String[] tt = withKeyword(title, markdown);
+        Map<String, Object> md = new LinkedHashMap<>();
+        md.put("title", tt[0]);
+        md.put("text", tt[1]);
+        post(Map.of("msgtype", "markdown", "markdown", md));
+    }
+
+    /** actionCard(带按钮)消息 */
+    private void sendActionCard(String title, String markdown, java.util.List<Map<String, String>> btns) {
+        String[] tt = withKeyword(title, markdown);
+        Map<String, Object> card = new LinkedHashMap<>();
+        card.put("title", tt[0]);
+        card.put("text", tt[1]);
+        card.put("btnOrientation", "1"); // 按钮横排
+        card.put("btns", btns);
+        post(Map.of("msgtype", "actionCard", "actionCard", card));
+    }
+
+    /** 关键词安全设置:确保正文/标题包含关键词。返回 [title, text] */
+    private String[] withKeyword(String title, String text) {
         String kw = settings.get(SettingService.DING_KEYWORD, "");
         if (StringUtils.hasText(kw)) {
-            // 关键词安全设置:正文需包含关键词
             if (!text.contains(kw)) text = text + "\n\n<font color=\"#BFBFBF\">" + kw + "</font>";
             if (!title.contains(kw)) title = kw + " " + title;
         }
+        return new String[]{title, text};
+    }
+
+    /** 实际发送:构造签名 URL + POST 消息体 */
+    private void post(Map<String, Object> payload) {
+        String webhook = settings.get(SettingService.DING_WEBHOOK, "");
+        if (webhook.isEmpty()) throw new ApiException(400, "尚未配置钉钉 Webhook 地址");
 
         String url = webhook;
         String secret = settings.get(SettingService.DING_SECRET, "");
@@ -195,13 +245,7 @@ public class DingTalkNotifier {
         }
 
         try {
-            Map<String, Object> md = new LinkedHashMap<>();
-            md.put("title", title);
-            md.put("text", text);
-            String body = objectMapper.writeValueAsString(Map.of(
-                    "msgtype", "markdown",
-                    "markdown", md
-            ));
+            String body = objectMapper.writeValueAsString(payload);
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .timeout(Duration.ofSeconds(8))

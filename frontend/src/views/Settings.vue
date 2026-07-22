@@ -78,6 +78,11 @@
             placeholder="https://oapi.dingtalk.com/robot/send?access_token=xxxxxx" />
         </el-form-item>
 
+        <el-form-item label="群内按钮地址">
+          <el-input v-model="form.actionBase" placeholder="如:http://43.136.56.131:8082(留空则群消息不带按钮)" />
+          <div class="tip">填公网可访问的服务器地址后,新工单钉钉卡片会带【认领/已解决/取消】按钮,群里点一下即可同步平台。</div>
+        </el-form-item>
+
         <el-form-item label="安全设置">
           <el-radio-group v-model="secMode">
             <el-radio value="keyword">关键词</el-radio>
@@ -174,7 +179,7 @@ async function saveOpt() {
   finally { savingOpt.value = false }
 }
 
-const form = reactive({ enabled: false, webhook: '', keyword: '', secret: '', secretSet: false })
+const form = reactive({ enabled: false, webhook: '', keyword: '', secret: '', secretSet: false, actionBase: '' })
 const secMode = ref('keyword')
 const saving = ref(false)
 const testing = ref(false)
@@ -188,6 +193,7 @@ async function load() {
     form.keyword = d.keyword || ''
     form.secretSet = d.secretSet
     form.secret = ''
+    form.actionBase = d.actionBase || ''
     secMode.value = d.secretSet ? 'sign' : 'keyword'
   } catch (e) { ElMessage.error(e.message) }
 }
@@ -200,7 +206,7 @@ function clearSecret() {
 }
 
 function buildPayload() {
-  const p = { enabled: form.enabled, webhook: form.webhook.trim() }
+  const p = { enabled: form.enabled, webhook: form.webhook.trim(), actionBase: form.actionBase.trim() }
   if (secMode.value === 'keyword') {
     p.keyword = form.keyword.trim()
     if (clearSec.value) p.secret = '__CLEAR__'
