@@ -256,15 +256,30 @@ public class TicketService {
     }
 
     /** 来自钉钉群按钮的状态变更(已通过签名校验) */
+    /** 只读:按 id 取工单(供钉钉确认页展示工单号/当前状态),不存在返回 null */
+    @Transactional(readOnly = true)
+    public Ticket peek(Long id) {
+        return ticketRepo.findById(id).orElse(null);
+    }
+
     @Transactional
     public Ticket updateStatusFromDing(Long id, String targetStatus, String actionLabel) {
         Ticket t = ticketRepo.findById(id)
                 .orElseThrow(() -> new ApiException(404, "工单不存在"));
-        if ("已取消".equals(t.getStatus())) {
-            throw new ApiException(400, "该工单已被报修人取消,无需再处理");
+        String cur = t.getStatus();
+        // 终态:已取消 / 已解决 / 已关闭 —— 钉钉群按钮一律不允许再变更
+        // (旧卡片按钮长期有效,必须在服务端兜底拦截,如需重开请到管理后台操作)
+        if ("已取消".equals(cur)) {
+            throw new ApiException(400, "该工单已被报修人取消,无法再操作");
         }
-        if ("已解决".equals(t.getStatus()) && "已解决".equals(targetStatus)) {
-            throw new ApiException(400, "该工单已是已解决状态");
+        if ("已解决".equals(cur)) {
+            throw new ApiException(400, "该工单已办结(已解决),如需变更请到管理后台操作");
+        }
+        if ("已关闭".equals(cur)) {
+            throw new ApiException(400, "该工单已关闭,无法再操作");
+        }
+        if (cur.equals(targetStatus)) {
+            throw new ApiException(400, "该工单已是【" + targetStatus + "】状态,无需重复操作");
         }
         t.setStatus(targetStatus);
         if ("已解决".equals(targetStatus) && t.getResolvedAt() == null) {
