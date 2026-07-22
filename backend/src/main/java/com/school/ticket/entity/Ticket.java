@@ -80,6 +80,10 @@ public class Ticket {
     /** 最近一次催单时间 */
     private LocalDateTime lastUrgedAt;
 
+    /** 报修人是否有未读的进展(后勤更新状态/加跟进后置 true,老师查看详情后置 false) */
+    @Column(nullable = false)
+    private Boolean userUnread = false;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime resolvedAt;
@@ -89,6 +93,7 @@ public class Ticket {
         LocalDateTime now = LocalDateTime.now();
         if (createdAt == null) createdAt = now;
         if (urgeCount == null) urgeCount = 0;
+        if (userUnread == null) userUnread = false;
         updatedAt = now;
     }
 

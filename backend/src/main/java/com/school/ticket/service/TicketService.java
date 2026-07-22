@@ -73,14 +73,25 @@ public class TicketService {
         return PageResponse.of(p.map(TicketResponse::from));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public TicketResponse getByIdForUser(Long id, Long userId) {
         Ticket t = ticketRepo.findById(id)
                 .orElseThrow(() -> new ApiException(404, "工单不存在"));
         if (!userId.equals(t.getUserId())) {
             throw new ApiException(403, "无权查看该工单");
         }
+        // 老师查看后清除"有更新"标记(需可写事务)
+        if (Boolean.TRUE.equals(t.getUserUnread())) {
+            t.setUserUnread(false);
+            ticketRepo.save(t);
+        }
         return withLogs(t);
+    }
+
+    /** 报修人未读进展的工单数(我的报修红点) */
+    @Transactional(readOnly = true)
+    public long unreadCount(Long userId) {
+        return ticketRepo.countByUserIdAndUserUnreadTrue(userId);
     }
 
     /** 报修人催单:仅本人、仅未完成工单;两小时内只能催一次 */
@@ -220,16 +231,23 @@ public class TicketService {
         if ("已取消".equals(t.getStatus())) {
             throw new ApiException(400, "该工单已被报修人取消,不能再修改");
         }
+        boolean progress = false;
         if (req.status() != null) {
             if (!props.getStatuses().contains(req.status()))
                 throw new ApiException(400, "非法状态");
+            if (!req.status().equals(t.getStatus())) progress = true;
             t.setStatus(req.status());
             if ("已解决".equals(req.status()) && t.getResolvedAt() == null) {
                 t.setResolvedAt(LocalDateTime.now());
             }
         }
         if (req.handler() != null) t.setHandler(trimOrNull(req.handler()));
-        if (req.resolution() != null) t.setResolution(trimOrNull(req.resolution()));
+        if (req.resolution() != null) {
+            String newRes = trimOrNull(req.resolution());
+            if (newRes != null && !newRes.equals(t.getResolution())) progress = true;
+            t.setResolution(newRes);
+        }
+        if (progress) t.setUserUnread(true); // 有进展,提醒报修人
         ticketRepo.save(t);
         return withLogs(t);
     }
@@ -249,6 +267,7 @@ public class TicketService {
         if ("已解决".equals(targetStatus) && t.getResolvedAt() == null) {
             t.setResolvedAt(LocalDateTime.now());
         }
+        t.setUserUnread(true); // 有进展,提醒报修人
         ticketRepo.save(t);
         TicketLog entry = new TicketLog();
         entry.setTicketId(id);
@@ -269,6 +288,7 @@ public class TicketService {
         log.setAuthor(trimOrNull(req.author()));
         logRepo.save(log);
         t.setUpdatedAt(LocalDateTime.now());
+        t.setUserUnread(true); // 后勤加了跟进,提醒报修人
         ticketRepo.save(t);
         return withLogs(t);
     }

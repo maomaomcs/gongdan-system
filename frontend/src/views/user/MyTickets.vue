@@ -18,8 +18,13 @@
     <div v-loading="loading">
       <el-card v-for="t in list" :key="t.id" class="ticket-item" shadow="never" @click="open(t)">
         <div class="ti-head">
-          <span class="ti-title">{{ t.title }}</span>
-          <el-tag :type="statusType(t.status)" size="small" effect="light">{{ t.status }}</el-tag>
+          <span class="ti-title">
+            <span v-if="t.userUnread" class="unread-dot" title="有更新"></span>{{ t.title }}
+          </span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <el-tag v-if="t.userUnread" type="danger" size="small" effect="dark">有更新</el-tag>
+            <el-tag :type="statusType(t.status)" size="small" effect="light">{{ t.status }}</el-tag>
+          </div>
         </div>
         <div class="ti-meta">
           <span>{{ t.category }}</span>
@@ -84,6 +89,9 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ElMessageBox } from 'element-plus'
 import { getMyTickets, getMyTicket, urgeTicket, cancelTicket } from '../../api'
+import { useUnread } from '../../composables/useUnread'
+
+const { refresh: refreshUnread } = useUnread()
 
 const list = ref([])
 const loading = ref(false)
@@ -117,9 +125,14 @@ async function load() {
 
 function search() { page.value = 1; load() }
 function onPage(p) { page.value = p; load() }
+function reload() { load(); refreshUnread() }
 
 async function open(t) {
-  try { cur.value = await getMyTicket(t.id); show.value = true }
+  try {
+    cur.value = await getMyTicket(t.id)
+    show.value = true
+    if (t.userUnread) { t.userUnread = false; refreshUnread() } // 查看后清除红点
+  }
   catch (e) { ElMessage.error(e.message) }
 }
 
@@ -151,5 +164,12 @@ async function cancel(t) {
   finally { canceling.value = null }
 }
 
-onMounted(load)
+onMounted(reload)
 </script>
+
+<style scoped>
+.unread-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #f5222d; margin-right: 6px; vertical-align: middle;
+}
+</style>

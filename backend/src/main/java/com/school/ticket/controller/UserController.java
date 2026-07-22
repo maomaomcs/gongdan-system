@@ -103,6 +103,12 @@ public class UserController {
         return ticketService.cancelByUser(id, currentUser(request).getId());
     }
 
+    /** 我的报修:有更新未读的数量(用于红点) */
+    @GetMapping("/user/tickets/unread-count")
+    public Map<String, Object> unreadCount(HttpServletRequest request) {
+        return Map.of("count", ticketService.unreadCount(currentUser(request).getId()));
+    }
+
     // ---------- 辅助 ----------
     private AppUser currentUser(HttpServletRequest request) {
         return appUserService.getByUsername(tokenStore.currentUsername(request));

@@ -30,6 +30,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
 
     long countByStatusIn(List<String> statuses);
 
+    long countByUserIdAndUserUnreadTrue(Long userId);
+
     @Query(value = "select avg(timestampdiff(second, created_at, resolved_at)) from ticket " +
             "where resolved_at is not null", nativeQuery = true)
     Double avgResolveSeconds();

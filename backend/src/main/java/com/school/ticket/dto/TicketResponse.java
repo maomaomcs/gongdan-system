@@ -22,6 +22,7 @@ public record TicketResponse(
         Integer urgeCount,
         LocalDateTime lastUrgedAt,
         boolean overdue,
+        boolean userUnread,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         LocalDateTime resolvedAt,
@@ -41,6 +42,7 @@ public record TicketResponse(
                 t.getCategory(), t.getTitle(), t.getDescription(), t.getUrgency(), t.getStatus(),
                 t.getHandler(), t.getResolution(), imgs,
                 t.getUrgeCount() == null ? 0 : t.getUrgeCount(), t.getLastUrgedAt(), overdue,
+                Boolean.TRUE.equals(t.getUserUnread()),
                 t.getCreatedAt(), t.getUpdatedAt(), t.getResolvedAt(),
                 logs
         );
