@@ -40,19 +40,23 @@ fetch_retry() {
     log "拉取失败,3 秒后重试($n/3)..."; sleep 3
   done
 }
+# 镜像(gitclone)只适合 clone 不适合 fetch,故兜底用"整个重新克隆"
+mirror_reclone() {
+  log "GitHub 不可用,改用镜像重新克隆:$GIT_MIRROR"
+  cd /
+  rm -rf "$REPO_DIR"
+  git clone "$GIT_MIRROR" "$REPO_DIR" || { err "镜像克隆失败,请检查网络"; exit 1; }
+  cd "$REPO_DIR"
+}
 if [ -d "$REPO_DIR/.git" ]; then
   log "更新代码:$REPO_DIR"
   cd "$REPO_DIR"
-  if ! fetch_retry; then
-    if [ -n "$GIT_MIRROR" ]; then
-      log "GitHub 连接失败,切换国内镜像:$GIT_MIRROR"
-      git remote set-url origin "$GIT_MIRROR"
-      fetch_retry || { err "拉取失败(GitHub 与镜像均不可用),请检查网络"; exit 1; }
-    else
-      err "拉取失败,请检查网络"; exit 1
-    fi
+  git remote set-url origin "$REPO_URL"   # 每次重置回 GitHub,便于恢复后增量拉
+  if fetch_retry; then
+    git reset --hard origin/main
+  else
+    mirror_reclone
   fi
-  git reset --hard origin/main
 else
   log "首次克隆代码到:$REPO_DIR"
   mkdir -p "$(dirname "$REPO_DIR")"
