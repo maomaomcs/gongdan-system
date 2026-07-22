@@ -27,6 +27,9 @@
             </el-select>
             <el-input v-else v-model="form.location" placeholder="如:教学楼3楼 302 教室" />
           </el-form-item>
+          <el-form-item label="设备编号(选填)">
+            <el-input v-model="form.assetNo" placeholder="设备上贴的资产编号,如 PC-教A-001,填了便于后勤查设备记录" clearable />
+          </el-form-item>
           <el-form-item label="故障类型" prop="category">
             <el-select v-model="form.category" placeholder="请选择…" style="width:100%">
               <el-option v-for="c in categories" :key="c" :label="c" :value="c" />
@@ -89,7 +92,7 @@ const images = ref([])
 
 const form = reactive({
   reporter: localStorage.getItem('user_name') || '',
-  contact: '', location: '', category: '', title: '', description: '', urgency: '普通',
+  contact: '', location: '', assetNo: '', category: '', title: '', description: '', urgency: '普通',
 })
 const rules = {
   reporter: [{ required: true, message: '请填写报修人', trigger: 'blur' }],
@@ -125,7 +128,7 @@ async function submit() {
 }
 
 function reset() {
-  Object.assign(form, { contact: '', location: '', category: '', title: '', description: '', urgency: '普通' })
+  Object.assign(form, { contact: '', location: '', assetNo: '', category: '', title: '', description: '', urgency: '普通' })
   images.value = []
   submitted.value = false
 }

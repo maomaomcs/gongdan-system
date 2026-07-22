@@ -43,6 +43,7 @@ public class TicketService {
         t.setReporter(req.reporter().trim());
         t.setContact(trimOrNull(req.contact()));
         t.setLocation(req.location().trim());
+        t.setAssetNo(trimOrNull(req.assetNo()));
         t.setCategory(req.category().trim());
         t.setTitle(req.title().trim());
         t.setDescription(trimOrNull(req.description()));
@@ -188,7 +189,8 @@ public class TicketService {
                         cb.like(root.get("description"), kw),
                         cb.like(root.get("reporter"), kw),
                         cb.like(root.get("location"), kw),
-                        cb.like(root.get("code"), kw)
+                        cb.like(root.get("code"), kw),
+                        cb.like(root.get("assetNo"), kw)
                 ));
             }
             // 仅对数据查询设置排序(计数查询结果类型为 Long,跳过)
@@ -242,6 +244,7 @@ public class TicketService {
             }
         }
         if (req.handler() != null) t.setHandler(trimOrNull(req.handler()));
+        if (req.assetNo() != null) t.setAssetNo(trimOrNull(req.assetNo()));
         if (req.resolution() != null) {
             String newRes = trimOrNull(req.resolution());
             if (newRes != null && !newRes.equals(t.getResolution())) progress = true;

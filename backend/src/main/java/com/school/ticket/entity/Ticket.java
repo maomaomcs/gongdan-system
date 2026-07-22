@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_status", columnList = "status"),
         @Index(name = "idx_category", columnList = "category"),
         @Index(name = "idx_location", columnList = "location"),
+        @Index(name = "idx_ticket_asset_no", columnList = "assetNo"),
         @Index(name = "idx_code", columnList = "code", unique = true)
 })
 public class Ticket {
@@ -37,6 +38,10 @@ public class Ticket {
     /** 位置/教室 */
     @Column(nullable = false, length = 128)
     private String location;
+
+    /** 关联资产编号(选填):填了就能在资产台账里看到这台设备的报障历史 */
+    @Column(length = 64)
+    private String assetNo;
 
     /** 故障类型 */
     @Column(nullable = false, length = 32)

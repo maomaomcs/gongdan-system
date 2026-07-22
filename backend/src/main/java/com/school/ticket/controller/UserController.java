@@ -68,7 +68,7 @@ public class UserController {
         CreateTicketRequest filled = new CreateTicketRequest(
                 orElse(req.reporter(), u.getDisplayName() != null ? u.getDisplayName() : u.getUsername()),
                 orElse(req.contact(), u.getPhone()),
-                req.location(), req.category(), req.title(), req.description(), req.urgency(), req.images()
+                req.location(), req.assetNo(), req.category(), req.title(), req.description(), req.urgency(), req.images()
         );
         TicketResponse t = ticketService.create(filled, u.getId());
         return Map.of("code", t.code(), "ticket", t);

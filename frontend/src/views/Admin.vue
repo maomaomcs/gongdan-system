@@ -62,6 +62,7 @@
           <el-descriptions-item label="工单号">{{ current.code }}</el-descriptions-item>
           <el-descriptions-item label="报修人">{{ current.reporter }} <span v-if="current.contact">· {{ current.contact }}</span></el-descriptions-item>
           <el-descriptions-item label="位置">{{ current.location }}</el-descriptions-item>
+          <el-descriptions-item label="设备编号">{{ current.assetNo || '(未关联)' }}</el-descriptions-item>
           <el-descriptions-item label="类型">{{ current.category }}</el-descriptions-item>
           <el-descriptions-item label="紧急度">
             <el-tag v-if="current.urgency==='紧急'" type="danger" size="small">紧急</el-tag><span v-else>普通</span>
@@ -87,6 +88,9 @@
             </el-form-item>
             <el-form-item label="处理人">
               <el-input v-model="edit.handler" placeholder="谁在处理" />
+            </el-form-item>
+            <el-form-item label="关联设备编号">
+              <el-input v-model="edit.assetNo" placeholder="填资产编号可在台账里看到该设备报障历史" clearable />
             </el-form-item>
             <el-form-item label="解决方案 / 备注">
               <el-input v-model="edit.resolution" type="textarea" :rows="3" placeholder="最终如何解决的" />
@@ -131,7 +135,7 @@ const total = ref(0)
 
 const drawer = ref(false)
 const current = ref(null)
-const edit = reactive({ status: '', handler: '', resolution: '' })
+const edit = reactive({ status: '', handler: '', resolution: '', assetNo: '' })
 const saving = ref(false)
 const newLog = ref('')
 
@@ -179,6 +183,7 @@ async function openDetail(row) {
     edit.status = current.value.status
     edit.handler = current.value.handler || ''
     edit.resolution = current.value.resolution || ''
+    edit.assetNo = current.value.assetNo || ''
     drawer.value = true
   } catch (e) {
     ElMessage.error(e.message)

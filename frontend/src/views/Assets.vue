@@ -25,6 +25,10 @@
       <el-button type="primary" @click="reload"><el-icon><Search /></el-icon>查询</el-button>
       <div class="spacer" />
       <el-button type="success" @click="openCreate"><el-icon><Plus /></el-icon>新增资产</el-button>
+      <el-button @click="downloadTemplate"><el-icon><Document /></el-icon>导入模板</el-button>
+      <el-upload :show-file-list="false" accept=".xlsx" :http-request="doImport" style="display:inline-block">
+        <el-button type="warning" plain :loading="importing"><el-icon><Upload /></el-icon>批量导入</el-button>
+      </el-upload>
       <el-button @click="doExport"><el-icon><Download /></el-icon>导出Excel</el-button>
     </div>
 
@@ -52,8 +56,9 @@
           <span v-else style="color:#bbb">—</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="170" fixed="right">
         <template #default="{ row }">
+          <el-button link type="warning" size="small" @click="openTickets(row)">报障记录</el-button>
           <el-button link type="primary" size="small" @click="openEdit(row)">编辑</el-button>
           <el-button link type="danger" size="small" @click="doDelete(row)">删除</el-button>
         </template>
@@ -106,13 +111,56 @@
         <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- 报障记录抽屉 -->
+    <el-drawer v-model="ticketDrawer" :title="`报障记录 · ${ticketAsset?.assetNo || ''}`" :size="isMobile ? '92%' : '620px'">
+      <div v-loading="ticketLoading">
+        <el-alert v-if="ticketAsset" :closable="false" type="info" style="margin-bottom:12px">
+          {{ ticketAsset.type }}{{ ticketAsset.brandModel ? ' · ' + ticketAsset.brandModel : '' }}
+          {{ ticketAsset.location ? ' · ' + ticketAsset.location : '' }} —— 共报障
+          <b style="color:#a4232a">{{ tickets.length }}</b> 次
+        </el-alert>
+        <el-empty v-if="!ticketLoading && tickets.length === 0" description="这台设备暂无报障记录" />
+        <el-timeline v-else>
+          <el-timeline-item v-for="t in tickets" :key="t.id"
+            :timestamp="fmtTime(t.createdAt)" placement="top"
+            :type="tlType(t.status)">
+            <el-card shadow="never" body-style="padding:10px 12px">
+              <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+                <b>{{ t.title }}</b>
+                <el-tag size="small" :type="tlType(t.status)">{{ t.status }}</el-tag>
+              </div>
+              <div style="color:#8a7f70;font-size:12px;margin-top:4px">
+                {{ t.code }} · {{ t.category }} · 报修人 {{ t.reporter }}
+              </div>
+              <div v-if="t.resolution" style="margin-top:6px;font-size:13px">处理:{{ t.resolution }}</div>
+            </el-card>
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+    </el-drawer>
+
+    <!-- 导入结果 -->
+    <el-dialog v-model="importDialog" title="导入结果" :width="isMobile ? '92%' : '520px'">
+      <div v-if="importResult">
+        <p>共 <b>{{ importResult.total }}</b> 行:成功
+          <b style="color:#67c23a">{{ importResult.success }}</b>,跳过
+          <b style="color:#e6a23c">{{ importResult.skipped }}</b>,失败
+          <b style="color:#f56c6c">{{ importResult.failed }}</b>。</p>
+        <div v-if="importResult.errors && importResult.errors.length" class="import-errs">
+          <div v-for="(e, i) in importResult.errors" :key="i">{{ e }}</div>
+        </div>
+      </div>
+      <template #footer><el-button type="primary" @click="importDialog = false">知道了</el-button></template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listAssets, createAsset, updateAsset, deleteAsset, getAssetStats, exportAssetsExcel } from '../api'
+import { listAssets, createAsset, updateAsset, deleteAsset, getAssetStats, exportAssetsExcel,
+  getAssetTickets, importAssets, downloadAssetTemplate } from '../api'
 import { useMobile } from '../composables/useMobile'
 
 const { isMobile } = useMobile()
@@ -205,6 +253,52 @@ async function doExport() {
   catch (e) { ElMessage.error(e.message) }
 }
 
+// ---- 批量导入 ----
+const importing = ref(false)
+const importDialog = ref(false)
+const importResult = ref(null)
+async function downloadTemplate() {
+  try { await downloadAssetTemplate() } catch (e) { ElMessage.error(e.message) }
+}
+async function doImport(opt) {
+  importing.value = true
+  try {
+    const fd = new FormData()
+    fd.append('file', opt.file)
+    importResult.value = await importAssets(fd)
+    importDialog.value = true
+    load(); loadStats()
+  } catch (e) {
+    ElMessage.error(e.message)
+  } finally {
+    importing.value = false
+  }
+}
+
+// ---- 报障记录 ----
+const ticketDrawer = ref(false)
+const ticketLoading = ref(false)
+const ticketAsset = ref(null)
+const tickets = ref([])
+async function openTickets(row) {
+  ticketAsset.value = row
+  tickets.value = []
+  ticketDrawer.value = true
+  ticketLoading.value = true
+  try {
+    const res = await getAssetTickets(row.id)
+    tickets.value = res.tickets || []
+  } catch (e) {
+    ElMessage.error(e.message)
+  } finally {
+    ticketLoading.value = false
+  }
+}
+function fmtTime(s) { return s ? String(s).replace('T', ' ').slice(0, 16) : '' }
+function tlType(s) {
+  return { 待处理: 'danger', 处理中: 'warning', 已解决: 'success', 已关闭: 'info', 已取消: 'info' }[s] || 'primary'
+}
+
 onMounted(() => { load(); loadStats() })
 </script>
 
@@ -223,6 +317,11 @@ onMounted(() => { load(); loadStats() })
 .pager { margin-top: 14px; justify-content: flex-end; }
 .w-expired { color: #c0392b; font-weight: 600; }
 .w-soon { color: #b8863b; font-weight: 600; }
+.import-errs {
+  margin-top: 10px; max-height: 260px; overflow: auto;
+  background: #fdf6e8; border: 1px solid #ece3d3; border-radius: 6px;
+  padding: 8px 10px; font-size: 12px; color: #8a6d3b; line-height: 1.9;
+}
 @media (max-width: 768px) {
   .toolbar .spacer { display: none; flex: 0; }
   .toolbar > * { flex: 1 1 auto; }

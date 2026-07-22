@@ -1,5 +1,6 @@
 package com.school.ticket.controller;
 
+import com.school.ticket.dto.AssetImportResult;
 import com.school.ticket.dto.AssetRequest;
 import com.school.ticket.dto.AssetResponse;
 import com.school.ticket.dto.PageResponse;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +48,12 @@ public class AssetController {
     @GetMapping("/{id}")
     public AssetResponse detail(@PathVariable Long id) {
         return assetService.getById(id);
+    }
+
+    /** 某台设备的报障工单历史(按资产编号关联) */
+    @GetMapping("/{id}/tickets")
+    public Map<String, Object> relatedTickets(@PathVariable Long id) {
+        return assetService.relatedTickets(id);
     }
 
     @PostMapping
@@ -83,6 +91,26 @@ public class AssetController {
             out.add(m);
         }
         return out;
+    }
+
+    /** 下载批量导入模板 */
+    @GetMapping("/template")
+    public ResponseEntity<byte[]> template() {
+        byte[] data = excelExportService.buildImportTemplate();
+        String filename = "资产导入模板.xlsx";
+        String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"asset-template.xlsx\"; filename*=UTF-8''" + encoded)
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(data);
+    }
+
+    /** 批量导入资产(上传按模板填好的 Excel) */
+    @PostMapping("/import")
+    public AssetImportResult importExcel(@RequestParam("file") MultipartFile file) {
+        return assetService.importFromExcel(file);
     }
 
     /** 导出资产台账 Excel(支持与列表相同的筛选条件) */

@@ -74,6 +74,52 @@ public class AssetExcelExportService {
         }
     }
 
+    /** 导入模板列(与导入解析顺序一致;不含"保修状态",那是自动算的) */
+    public static final String[] IMPORT_HEADERS = {
+            "资产编号*", "类型*", "品牌型号", "序列号SN", "IP", "MAC", "位置",
+            "责任人", "使用科室", "状态(在用/闲置/维修中/报废)", "购入日期(如2023-09-01)",
+            "保修到期(如2026-08-15)", "供应商", "采购单号", "备注"
+    };
+
+    /** 生成批量导入模板(表头 + 一行示例) */
+    public byte[] buildImportTemplate() {
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = wb.createSheet("资产导入");
+
+            CellStyle headStyle = wb.createCellStyle();
+            Font headFont = wb.createFont();
+            headFont.setBold(true);
+            headFont.setColor(IndexedColors.WHITE.getIndex());
+            headStyle.setFont(headFont);
+            headStyle.setFillForegroundColor(IndexedColors.DARK_RED.getIndex());
+            headStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            Row head = sheet.createRow(0);
+            for (int i = 0; i < IMPORT_HEADERS.length; i++) {
+                Cell c = head.createCell(i);
+                c.setCellValue(IMPORT_HEADERS[i]);
+                c.setCellStyle(headStyle);
+            }
+
+            // 示例行(带*的两列必填,其余选填)
+            String[] sample = {"PC-教A-001", "台式电脑", "联想 M720", "SN123456", "10.0.1.21",
+                    "AA:BB:CC:11:22:33", "教学楼A-201", "张老师", "信息中心", "在用",
+                    "2023-09-01", "2026-08-15", "XX科技", "CG20230901", "首批采购"};
+            Row ex = sheet.createRow(1);
+            for (int i = 0; i < sample.length; i++) ex.createCell(i).setCellValue(sample[i]);
+
+            int[] widths = {16, 12, 18, 16, 14, 18, 16, 10, 12, 22, 20, 20, 14, 14, 20};
+            for (int i = 0; i < widths.length; i++) sheet.setColumnWidth(i, widths[i] * 256);
+            sheet.createFreezePane(0, 1);
+
+            wb.write(out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new ApiException(500, "生成模板失败: " + e.getMessage());
+        }
+    }
+
     private String nz(String s) {
         return s == null ? "" : s;
     }

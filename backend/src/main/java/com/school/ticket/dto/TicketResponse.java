@@ -11,6 +11,7 @@ public record TicketResponse(
         String reporter,
         String contact,
         String location,
+        String assetNo,
         String category,
         String title,
         String description,
@@ -38,7 +39,7 @@ public record TicketResponse(
             overdue = t.getCreatedAt().isBefore(LocalDateTime.now().minusHours(overdueHours));
         }
         return new TicketResponse(
-                t.getId(), t.getCode(), t.getReporter(), t.getContact(), t.getLocation(),
+                t.getId(), t.getCode(), t.getReporter(), t.getContact(), t.getLocation(), t.getAssetNo(),
                 t.getCategory(), t.getTitle(), t.getDescription(), t.getUrgency(), t.getStatus(),
                 t.getHandler(), t.getResolution(), imgs,
                 t.getUrgeCount() == null ? 0 : t.getUrgeCount(), t.getLastUrgedAt(), overdue,

@@ -95,6 +95,21 @@ export const createAsset = (data) => api.post('/admin/assets', data)
 export const updateAsset = (id, data) => api.put('/admin/assets/' + id, data)
 export const deleteAsset = (id) => api.delete('/admin/assets/' + id)
 export const getAssetStats = () => api.get('/admin/assets/stats')
+export const getAssetTickets = (id) => api.get('/admin/assets/' + id + '/tickets')
+export const importAssets = (formData) => api.post('/admin/assets/import', formData)
+
+export async function downloadAssetTemplate() {
+  const token = localStorage.getItem('admin_token')
+  const res = await fetch('/api/admin/assets/template', { headers: { Authorization: 'Bearer ' + token } })
+  if (!res.ok) throw new Error('下载模板失败')
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = '资产导入模板.xlsx'
+  document.body.appendChild(a); a.click(); a.remove()
+  URL.revokeObjectURL(url)
+}
 
 export async function exportAssetsExcel(params) {
   const token = localStorage.getItem('admin_token')
