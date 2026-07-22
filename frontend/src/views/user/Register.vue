@@ -3,7 +3,7 @@
     <div class="auth-card">
       <div class="auth-header">
         <div class="logo">石</div>
-        <h1>石室联中 · 注册</h1>
+        <h1>石室联中132 · 注册</h1>
         <p>注册后报修记录会保存在你的账号下</p>
         <span class="motto">爱国利民</span>
       </div>

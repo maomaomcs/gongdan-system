@@ -1,0 +1,1 @@
+import{h as n}from"./index-CJ-I4OOO.js";import{h as o}from"./index-BrxUZuO9.js";const t=o(0);function c(){async function r(){if(!localStorage.getItem("user_token")){t.value=0;return}try{const e=await n();t.value=e.count||0}catch{}}return{count:t,refresh:r}}export{c as u};

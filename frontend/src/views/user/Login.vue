@@ -3,7 +3,7 @@
     <div class="auth-card">
       <div class="auth-header">
         <div class="logo">石</div>
-        <h1>石室联中 · 后勤报修</h1>
+        <h1>石室联中132 · 后勤报修</h1>
         <p>登录后即可报修、随时查看进度</p>
         <span class="motto">爱国利民</span>
       </div>

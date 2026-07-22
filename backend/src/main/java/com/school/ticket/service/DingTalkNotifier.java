@@ -97,7 +97,7 @@ public class DingTalkNotifier {
     /** 发送测试消息(同步,返回结果,供后台"发送测试"按钮调用) */
     public void sendTest() {
         String md = header("✅ 通知测试", "#52C41A")
-                + row("📌 系统", "石室联中 · 后勤报修")
+                + row("📌 系统", "石室联中132 · 后勤报修")
                 + row("📶 状态", "钉钉通知配置成功")
                 + divider()
                 + quote("看到本条消息说明配置正确,可以正常接收报修提醒了");

@@ -2,7 +2,7 @@
   <div class="user-shell">
     <header class="user-top">
       <div class="user-top-inner">
-        <span class="u-logo"><span class="seal">石</span>石室联中 · 后勤报修</span>
+        <span class="u-logo"><span class="seal">石</span>石室联中132 · 报修</span>
         <span class="u-name" @click="logout">{{ name }} · 退出</span>
       </div>
     </header>

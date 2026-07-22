@@ -65,7 +65,7 @@ public class DingActionController {
                 + "<div style=\"font-size:52px;line-height:1\">" + icon + "</div>"
                 + "<h2 style=\"font-family:'Noto Serif SC','STSong',serif;color:" + color + ";margin:16px 0 8px\">" + esc(title) + "</h2>"
                 + "<p style=\"color:#6b6156;font-size:15px;line-height:1.7;margin:0\">" + msg + "</p>"
-                + "<div style=\"margin-top:22px;font-size:12px;color:#b7ab97\">石室联中 · 后勤报修</div>"
+                + "<div style=\"margin-top:22px;font-size:12px;color:#b7ab97\">石室联中132 · 后勤报修</div>"
                 + "</div></body></html>";
     }
 }

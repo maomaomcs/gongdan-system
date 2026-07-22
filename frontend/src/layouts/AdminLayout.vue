@@ -2,7 +2,7 @@
   <el-container class="admin-layout">
     <!-- 桌面侧边栏 -->
     <el-aside v-if="!isMobile" width="210px" class="admin-aside">
-      <div class="admin-logo"><span class="dot">石</span> 石室联中 · 报修后台</div>
+      <div class="admin-logo"><span class="dot">石</span> 石室联中132 · 后台</div>
       <el-menu :default-active="active" background-color="#2a2320" text-color="#cabbac" active-text-color="#fdf6e8" router>
         <el-menu-item index="/admin/tickets"><el-icon><Tickets /></el-icon><span>工单管理</span></el-menu-item>
         <el-menu-item index="/admin/stats"><el-icon><DataLine /></el-icon><span>数据统计</span></el-menu-item>
@@ -13,7 +13,7 @@
 
     <!-- 移动端抽屉菜单 -->
     <el-drawer v-model="drawer" direction="ltr" size="210px" :with-header="false" class="admin-drawer">
-      <div class="admin-logo"><span class="dot">石</span> 石室联中 · 报修后台</div>
+      <div class="admin-logo"><span class="dot">石</span> 石室联中132 · 后台</div>
       <el-menu :default-active="active" background-color="#2a2320" text-color="#cabbac" active-text-color="#fdf6e8" router @select="drawer = false">
         <el-menu-item index="/admin/tickets"><el-icon><Tickets /></el-icon><span>工单管理</span></el-menu-item>
         <el-menu-item index="/admin/stats"><el-icon><DataLine /></el-icon><span>数据统计</span></el-menu-item>
@@ -26,7 +26,7 @@
       <el-header class="admin-header">
         <div style="display:flex;align-items:center;gap:10px">
           <el-icon v-if="isMobile" style="font-size:22px" @click="drawer = true"><Menu /></el-icon>
-          <span style="font-weight:700;color:#7a1519;font-family:'Noto Serif SC','STSong',serif">石室联合中学 · 后勤报修管理</span>
+          <span style="font-weight:700;color:#7a1519;font-family:'Noto Serif SC','STSong',serif">成都市石室联中132学校 · 后勤报修管理</span>
         </div>
         <div style="display:flex;align-items:center;gap:4px">
           <span v-if="!isMobile" style="color:#94a3b8;font-size:14px;margin-right:6px">{{ name }}</span>
