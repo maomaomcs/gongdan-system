@@ -1,0 +1,90 @@
+@startuml
+!pragma layout smetana
+hide circle
+skinparam class {
+  BackgroundColor #FDF6E8
+  BorderColor #A4232A
+}
+
+entity "app_user 教师" as app_user {
+  * id : bigint <<PK>>
+  --
+  username : varchar(64) <<U>>
+  password_hash : varchar
+  display_name : varchar
+  phone : varchar
+  enabled : boolean
+}
+
+entity "admin_user 管理员" as admin_user {
+  * id : bigint <<PK>>
+  --
+  username : varchar(64) <<U>>
+  password_hash : varchar
+  enabled : boolean
+}
+
+entity "ticket 工单" as ticket {
+  * id : bigint <<PK>>
+  --
+  code : varchar(32) <<U>>
+  reporter : varchar
+  location : varchar
+  asset_no : varchar(64)
+  category : varchar
+  title : varchar
+  status : varchar
+  handler : varchar
+  urgency : varchar
+  user_id : bigint <<FK>>
+  urge_count : int
+  user_unread : boolean
+  created_at : datetime
+  resolved_at : datetime
+}
+
+entity "ticket_log 跟进" as ticket_log {
+  * id : bigint <<PK>>
+  --
+  ticket_id : bigint <<FK>>
+  content : varchar
+  author : varchar
+  created_at : datetime
+}
+
+entity "asset 资产" as asset {
+  * id : bigint <<PK>>
+  --
+  asset_no : varchar(64) <<U>>
+  type : varchar
+  brand_model : varchar
+  serial_no : varchar
+  ip : varchar
+  location : varchar
+  owner : varchar
+  purchase_date : date
+  warranty_end : date
+  status : varchar
+}
+
+entity "invite_code 邀请码" as invite_code {
+  * id : bigint <<PK>>
+  --
+  code : varchar(32) <<U>>
+  max_uses : int
+  used_count : int
+  enabled : boolean
+}
+
+entity "auth_token 登录令牌" as auth_token {
+  * token : varchar <<PK>>
+  --
+  username : varchar
+  role : varchar
+  expires_at : datetime
+}
+
+app_user ||--o{ ticket : "提交"
+ticket ||--o{ ticket_log : "包含"
+asset ||--o{ ticket : "关联(asset_no)"
+@enduml

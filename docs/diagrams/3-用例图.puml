@@ -1,0 +1,45 @@
+@startuml
+!pragma layout smetana
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #FDF6E8
+skinparam usecaseBorderColor #A4232A
+skinparam actorBorderColor #A4232A
+
+actor 教师 as t
+actor 管理员 as a
+actor 游客 as g
+
+rectangle 校园报障工单与IT资产管理系统 {
+  usecase "注册/登录" as u1
+  usecase "提交报修" as u2
+  usecase "查看我的报修" as u3
+  usecase "催单" as u4
+  usecase "取消报修" as u5
+  usecase "按工单号查询" as u6
+
+  usecase "工单处理与跟进" as a1
+  usecase "工单统计/导出" as a2
+  usecase "资产台账管理" as a3
+  usecase "资产批量导入/导出" as a4
+  usecase "查看设备报障历史" as a5
+  usecase "账号与邀请码管理" as a6
+  usecase "系统设置(钉钉/报修选项)" as a7
+}
+
+t --> u1
+t --> u2
+t --> u3
+t --> u4
+t --> u5
+g --> u6
+
+a --> a1
+a --> a2
+a --> a3
+a --> a4
+a --> a5
+a --> a6
+a --> a7
+a --> u1
+@enduml

@@ -1,0 +1,46 @@
+@startuml
+!pragma layout smetana
+skinparam componentStyle rectangle
+skinparam rectangle {
+  BackgroundColor #FDF6E8
+  BorderColor #A4232A
+}
+skinparam ArrowColor #7A1519
+
+title 校园报障工单与IT资产管理系统 · 总体架构
+
+actor "教师" as teacher
+actor "管理员" as admin
+actor "游客" as guest
+
+package "表现层（Vue3 + Element Plus + PWA）" {
+  [教师端\n报修 / 我的报修] as feUser
+  [管理端\n工单 / 资产 / 统计 / 设置] as feAdmin
+}
+
+package "应用层（Spring Boot）" {
+  [Controller 层\nREST 接口] as ctrl
+  [拦截器\n鉴权 / 令牌] as intc
+  [Service 层\n业务逻辑 / 事务] as svc
+  [Repository 层\nSpring Data JPA] as repo
+  [钉钉推送 / Excel 导入导出\n图片压缩 / 定时任务] as util
+}
+
+database "MySQL" as db
+folder "本地文件\n上传图片" as fs
+cloud "钉钉群机器人" as ding
+
+teacher --> feUser
+admin --> feAdmin
+guest --> feUser
+
+feUser --> ctrl : HTTP+JSON\n(Bearer Token)
+feAdmin --> ctrl : HTTP+JSON\n(Bearer Token)
+ctrl --> intc
+intc --> svc
+svc --> repo
+svc --> util
+repo --> db
+util --> fs
+util --> ding
+@enduml
