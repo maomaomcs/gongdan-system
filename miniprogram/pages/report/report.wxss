@@ -1,0 +1,37 @@
+.field { margin-bottom: 28rpx; }
+.label { display: block; font-size: 28rpx; color: #7a1519; margin-bottom: 14rpx; font-weight: 600; }
+.ipt {
+  background: #f8f4ec; border: 2rpx solid #eee2cf; border-radius: 12rpx;
+  padding: 22rpx; font-size: 30rpx; width: 100%; box-sizing: border-box;
+}
+.area { height: 160rpx; }
+.picker {
+  background: #f8f4ec; border: 2rpx solid #eee2cf; border-radius: 12rpx;
+  padding: 22rpx; font-size: 30rpx;
+}
+.picker.ph { color: #b7ab97; }
+
+.loc-tags { margin-top: 14rpx; display: flex; flex-wrap: wrap; gap: 14rpx; }
+.loc-tag {
+  background: #f0eadd; color: #6b6156; font-size: 24rpx;
+  padding: 8rpx 20rpx; border-radius: 999rpx;
+}
+
+.imgs { display: flex; flex-wrap: wrap; gap: 18rpx; }
+.img-box { position: relative; width: 160rpx; height: 160rpx; }
+.img { width: 160rpx; height: 160rpx; border-radius: 12rpx; }
+.img-del {
+  position: absolute; top: -12rpx; right: -12rpx; width: 40rpx; height: 40rpx;
+  background: #c0392b; color: #fff; border-radius: 50%; text-align: center;
+  line-height: 40rpx; font-size: 30rpx;
+}
+.img-add {
+  width: 160rpx; height: 160rpx; border: 2rpx dashed #d8c9a8; border-radius: 12rpx;
+  display: flex; align-items: center; justify-content: center; color: #a89e91; font-size: 26rpx;
+}
+
+.faq-head { display: flex; justify-content: space-between; align-items: center; }
+.faq-item { margin-top: 18rpx; }
+.faq-q { font-size: 28rpx; color: #3a332c; }
+.faq-a { margin-top: 6rpx; }
+.submit { margin-top: 10rpx; }

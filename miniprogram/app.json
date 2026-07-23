@@ -1,0 +1,26 @@
+{
+  "pages": [
+    "pages/report/report",
+    "pages/my/my",
+    "pages/detail/detail",
+    "pages/login/login"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#a4232a",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "石室联中·报修",
+    "backgroundColor": "#f6f1e7"
+  },
+  "tabBar": {
+    "color": "#8a7f72",
+    "selectedColor": "#a4232a",
+    "backgroundColor": "#fffdf8",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/report/report", "text": "我要报修" },
+      { "pagePath": "pages/my/my", "text": "我的报修" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

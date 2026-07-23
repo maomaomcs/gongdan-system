@@ -1,0 +1,31 @@
+<view class="login-wrap">
+  <view class="brand">
+    <view class="seal">石</view>
+    <view class="brand-txt">
+      <view class="brand-cn">石室联中132 · 报修</view>
+      <view class="brand-en">爱国利民 · 后勤报障</view>
+    </view>
+  </view>
+
+  <view class="card form">
+    <view class="tabs">
+      <view class="tab {{mode==='login'?'on':''}}" bindtap="switchMode" data-m="login">登录</view>
+      <view class="tab {{mode==='register'?'on':''}}" bindtap="switchMode" data-m="register">注册</view>
+    </view>
+
+    <input class="ipt" placeholder="账号" value="{{username}}" data-field="username" bindinput="onInput" />
+    <input class="ipt" placeholder="密码" password value="{{password}}" data-field="password" bindinput="onInput" />
+
+    <block wx:if="{{mode==='register'}}">
+      <input class="ipt" placeholder="姓名(选填)" value="{{displayName}}" data-field="displayName" bindinput="onInput" />
+      <input class="ipt" placeholder="手机号(选填)" value="{{phone}}" data-field="phone" bindinput="onInput" />
+      <input class="ipt" placeholder="邀请码(向管理员索取)" value="{{inviteCode}}" data-field="inviteCode" bindinput="onInput" />
+    </block>
+
+    <button class="btn-primary submit" loading="{{loading}}" bindtap="submit">
+      {{mode==='login'?'登 录':'注 册'}}
+    </button>
+
+    <view class="tip muted" wx:if="{{mode==='login'}}">首次使用请点上方「注册」,需邀请码</view>
+  </view>
+</view>

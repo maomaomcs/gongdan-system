@@ -1,0 +1,33 @@
+<view class="filters">
+  <view
+    class="filter {{status===item.key?'on':''}}"
+    wx:for="{{filters}}"
+    wx:key="key"
+    data-key="{{item.key}}"
+    bindtap="chooseFilter"
+  >{{item.label}}</view>
+</view>
+
+<view class="container">
+  <view class="card ticket" wx:for="{{list}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail">
+    <view class="row1">
+      <text class="t-title">{{item.title}}</text>
+      <text class="tag tag-{{item.status}}">{{item.status}}</text>
+    </view>
+    <view class="row2 muted">
+      <text>{{item.category}} · {{item.location}}</text>
+    </view>
+    <view class="row3">
+      <text class="muted">{{item.code}} · {{item.date}}</text>
+      <view class="marks">
+        <text class="mark urgent" wx:if="{{item.urgency==='紧急'}}">紧急</text>
+        <text class="mark over" wx:if="{{item.overdue}}">超时</text>
+        <text class="mark urge" wx:if="{{item.urgeCount>0}}">催{{item.urgeCount}}</text>
+        <text class="dot" wx:if="{{item.userUnread}}">●有更新</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty muted" wx:if="{{list.length===0 && !loading}}">暂无报修记录</view>
+  <view class="loading muted" wx:if="{{loading}}">加载中…</view>
+</view>

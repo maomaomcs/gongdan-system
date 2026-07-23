@@ -1,0 +1,20 @@
+.filters {
+  display: flex; background: #fffdf8; padding: 16rpx 12rpx; gap: 8rpx;
+  position: sticky; top: 0; z-index: 10; border-bottom: 2rpx solid #f0eadd;
+}
+.filter { flex: 1; text-align: center; padding: 14rpx 0; font-size: 26rpx; color: #8a7f72; border-radius: 10rpx; }
+.filter.on { background: #a4232a; color: #fff; }
+
+.ticket { }
+.row1 { display: flex; justify-content: space-between; align-items: flex-start; }
+.t-title { font-size: 32rpx; font-weight: 600; color: #2a2320; flex: 1; margin-right: 16rpx; }
+.row2 { margin-top: 12rpx; }
+.row3 { margin-top: 16rpx; display: flex; justify-content: space-between; align-items: center; }
+.marks { display: flex; gap: 10rpx; align-items: center; }
+.mark { font-size: 22rpx; padding: 2rpx 12rpx; border-radius: 6rpx; }
+.mark.urgent { background: #fdecea; color: #c0392b; }
+.mark.over { background: #fff4e6; color: #d46b08; }
+.mark.urge { background: #f0eadd; color: #8a6d3b; }
+.dot { font-size: 22rpx; color: #c0392b; }
+
+.empty, .loading { text-align: center; padding: 60rpx 0; }

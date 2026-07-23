@@ -1,0 +1,42 @@
+<view class="container" wx:if="{{t}}">
+  <view class="card">
+    <view class="head">
+      <text class="d-title">{{t.title}}</text>
+      <text class="tag tag-{{t.status}}">{{t.status}}</text>
+    </view>
+    <view class="code muted">{{t.code}} · {{t.date}}</view>
+
+    <view class="hr"></view>
+
+    <view class="kv"><text class="k">故障类型</text><text class="v">{{t.category}}</text></view>
+    <view class="kv"><text class="k">报修位置</text><text class="v">{{t.location}}</text></view>
+    <view class="kv"><text class="k">紧急程度</text><text class="v">{{t.urgency}}</text></view>
+    <view class="kv" wx:if="{{t.description}}"><text class="k">详细描述</text><text class="v">{{t.description}}</text></view>
+    <view class="kv" wx:if="{{t.handler}}"><text class="k">处理人</text><text class="v">{{t.handler}}</text></view>
+    <view class="kv" wx:if="{{t.resolution}}"><text class="k">处理结果</text><text class="v">{{t.resolution}}</text></view>
+
+    <block wx:if="{{images.length}}">
+      <view class="k" style="margin-top:16rpx">现场照片</view>
+      <view class="imgs">
+        <image wx:for="{{images}}" wx:key="index" class="img" src="{{item}}" mode="aspectFill" data-url="{{item}}" bindtap="preview" />
+      </view>
+    </block>
+  </view>
+
+  <view class="card" wx:if="{{logs.length}}">
+    <view class="title-serif">处理进展</view>
+    <view class="hr"></view>
+    <view class="log" wx:for="{{logs}}" wx:key="index">
+      <view class="log-dot"></view>
+      <view class="log-body">
+        <view class="log-content">{{item.content}}</view>
+        <view class="muted log-meta">{{item.author}} · {{item.time}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="actions">
+    <button class="btn-ghost act" wx:if="{{canUrge}}" loading="{{acting}}" bindtap="urge">催一下{{t.urgeCount>0?'(已催'+t.urgeCount+')':''}}</button>
+    <button class="btn-primary act" wx:if="{{canCancel}}" bindtap="cancel">取消报修</button>
+  </view>
+</view>

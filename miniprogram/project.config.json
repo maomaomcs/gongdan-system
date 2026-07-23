@@ -1,0 +1,17 @@
+{
+  "description": "石室联中132·后勤报修 老师端小程序",
+  "packOptions": { "ignore": [], "include": [] },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "newFeature": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.5.5",
+  "appid": "touristappid",
+  "projectname": "shishi-repair-mp",
+  "miniprogramRoot": "./"
+}

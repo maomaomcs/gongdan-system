@@ -1,0 +1,65 @@
+<view class="container">
+  <!-- 常见问题 -->
+  <view class="card faq" wx:if="{{faqs.length}}">
+    <view class="faq-head" bindtap="toggleFaq">
+      <text class="title-serif">常见问题(点开先自助)</text>
+      <text class="muted">{{faqOpen ? '收起 ▲' : '展开 ▼'}}</text>
+    </view>
+    <block wx:if="{{faqOpen}}">
+      <view class="faq-item" wx:for="{{faqs}}" wx:key="index">
+        <view class="faq-q">Q: {{item.q}}</view>
+        <view class="faq-a muted">A: {{item.a}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="card">
+    <view class="field">
+      <text class="label">故障类型 *</text>
+      <picker mode="selector" range="{{categories}}" bindchange="onCategory">
+        <view class="picker {{form.category?'':'ph'}}">{{form.category || '请选择'}}</view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <text class="label">报修位置 *</text>
+      <input class="ipt" placeholder="如:教学楼3楼 初一(2)班" value="{{form.location}}" data-field="location" bindinput="onField" />
+      <view class="loc-tags" wx:if="{{locations.length}}">
+        <text class="loc-tag" wx:for="{{locations}}" wx:key="index" data-loc="{{item}}" bindtap="pickLocation">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="label">问题简述 *</text>
+      <input class="ipt" placeholder="一句话说清问题" maxlength="128" value="{{form.title}}" data-field="title" bindinput="onField" />
+    </view>
+
+    <view class="field">
+      <text class="label">详细描述</text>
+      <textarea class="ipt area" placeholder="补充说明(选填)" maxlength="1000" value="{{form.description}}" data-field="description" bindinput="onField" />
+    </view>
+
+    <view class="field">
+      <text class="label">紧急程度</text>
+      <picker mode="selector" range="{{urgencies}}" bindchange="onUrgency">
+        <view class="picker">{{form.urgency}}</view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <text class="label">现场照片</text>
+      <view class="imgs">
+        <view class="img-box" wx:for="{{images}}" wx:key="url">
+          <image class="img" src="{{item.full}}" mode="aspectFill" data-full="{{item.full}}" bindtap="previewImage" />
+          <view class="img-del" data-i="{{index}}" catchtap="removeImage">×</view>
+        </view>
+        <view class="img-add" bindtap="chooseImage" wx:if="{{images.length < 6}}">
+          <text wx:if="{{!uploading}}">+ 拍照</text>
+          <text wx:else>上传中…</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <button class="btn-primary submit" loading="{{submitting}}" bindtap="submit">提交报修</button>
+</view>
