@@ -81,6 +81,9 @@
         <el-card><div class="chart-box"><v-chart :option="pagesOpt" autoresize /></div></el-card>
       </el-col>
       <el-col :xs="24" :sm="12" class="chart-col">
+        <el-card><div class="chart-box"><v-chart :option="regionOpt" autoresize /></div></el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" class="chart-col">
         <el-card><div class="chart-box"><v-chart :option="deviceOpt" autoresize /></div></el-card>
       </el-col>
     </el-row>
@@ -112,6 +115,7 @@ const av = reactive({ today: {}, yesterday: {}, range: {} })
 const trendOpt = ref({})
 const refererOpt = ref({})
 const pagesOpt = ref({})
+const regionOpt = ref({})
 const deviceOpt = ref({})
 
 function pageLabel(path) {
@@ -139,6 +143,7 @@ async function loadAnalytics() {
     }
     refererOpt.value = barOption('访问来源 Top', a.referers || [], '#b8863b')
     pagesOpt.value = barOption('热门页面 Top', (a.pages || []).map((p) => ({ name: pageLabel(p.name), count: p.count })), '#a4232a')
+    regionOpt.value = barOption('访问地区 Top(按 IP 归属地)', a.regions || [], '#7a1519')
     deviceOpt.value = {
       title: { text: '访问设备', left: 'center', textStyle: { fontSize: 15 } },
       tooltip: { trigger: 'item' },

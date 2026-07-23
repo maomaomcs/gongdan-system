@@ -30,6 +30,10 @@ public class VisitLog {
     @Column(length = 120)
     private String refererDomain;
 
+    /** 访问地区(由 IP 解析,如 四川省·成都市 / 北京市 / 海外;IP 本身不落库) */
+    @Column(length = 80)
+    private String region;
+
     /** 访客指纹:sha256(IP|UA|day) 前 32 位,当天去重用,IP 不落明文 */
     @Column(length = 40)
     private String visitorHash;

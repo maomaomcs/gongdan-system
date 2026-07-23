@@ -1,0 +1,1 @@
+import{O as n,i as a}from"./index-BVT87THH.js";const t=a(0);function u(){async function r(){if(!localStorage.getItem("user_token")){t.value=0;return}try{const e=await n();t.value=e.count||0}catch{}}return{count:t,refresh:r}}export{u};

@@ -31,6 +31,10 @@ public interface VisitLogRepository extends JpaRepository<VisitLog, Long> {
     @Query("select v.device, count(v) from VisitLog v where v.day >= :from group by v.device")
     List<Object[]> deviceSplit(@Param("from") LocalDate from);
 
+    @Query("select v.region, count(v) from VisitLog v where v.day >= :from " +
+            "group by v.region order by count(v) desc")
+    List<Object[]> topRegions(@Param("from") LocalDate from, Pageable pageable);
+
     long countByDayGreaterThanEqual(LocalDate from);
 
     @Query("select count(distinct v.visitorHash) from VisitLog v where v.day >= :from")
