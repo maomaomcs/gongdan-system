@@ -40,6 +40,7 @@ export default api
 // ---- 公开 ----
 export const getConfig = () => api.get('/config')
 export const queryByCode = (code) => api.get('/tickets/code/' + encodeURIComponent(code))
+export const trackVisit = (payload) => api.post('/track', payload)
 
 // ---- 用户(老师)端 ----
 export const userRegister = (data) => api.post('/user/register', data)
@@ -82,6 +83,7 @@ export const getTicket = (id) => api.get('/admin/tickets/' + id)
 export const updateTicket = (id, data) => api.patch('/admin/tickets/' + id, data)
 export const addLog = (id, data) => api.post('/admin/tickets/' + id + '/logs', data)
 export const getStats = () => api.get('/admin/stats')
+export const getAnalytics = (days = 7) => api.get('/admin/analytics', { params: { days } })
 export const getDingSettings = () => api.get('/admin/settings/ding')
 export const saveDingSettings = (data) => api.put('/admin/settings/ding', data)
 export const testDingNotify = () => api.post('/admin/settings/ding/test')

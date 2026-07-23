@@ -28,6 +28,20 @@ public class PublicController {
     private final AppProperties props;
     private final AdminUserService adminUserService;
     private final com.school.ticket.service.SettingService settingService;
+    private final com.school.ticket.service.AnalyticsService analyticsService;
+
+    /** 前台访问打点(SPA 每次换页上报),失败静默不影响用户 */
+    @PostMapping("/track")
+    public Map<String, Object> track(@RequestBody(required = false) Map<String, String> body,
+                                     jakarta.servlet.http.HttpServletRequest request) {
+        try {
+            String path = body == null ? null : body.get("path");
+            String referrer = body == null ? null : body.get("referrer");
+            analyticsService.record(request, path, referrer);
+        } catch (Exception ignored) {
+        }
+        return Map.of("ok", true);
+    }
 
     /** 按工单号查询进度(公开保留,方便无账号临时查询) */
     @GetMapping("/tickets/code/{code}")

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { trackVisit } from '../api'
 
 const routes = [
   // ---- 用户(老师)端 ----
@@ -37,6 +38,14 @@ const router = createRouter({ history: createWebHistory(), routes })
 router.beforeEach((to) => {
   if (to.meta.requiresAdmin && !localStorage.getItem('admin_token')) return { path: '/admin/login' }
   if (to.meta.requiresUser && !localStorage.getItem('user_token')) return { path: '/login' }
+})
+
+router.afterEach((to, from) => {
+  // 前台(老师端/登录/注册)访问打点,不含 /admin
+  if (!to.path.startsWith('/admin')) {
+    const referrer = from && from.name ? location.origin + from.fullPath : (document.referrer || '')
+    trackVisit({ path: to.fullPath, referrer }).catch(() => {})
+  }
 })
 
 export default router

@@ -28,6 +28,13 @@ public class AdminController {
 
     private final TicketService ticketService;
     private final ExcelExportService excelExportService;
+    private final com.school.ticket.service.AnalyticsService analyticsService;
+
+    /** 网站访问统计(访客数/来源/热门页/设备) */
+    @GetMapping("/analytics")
+    public java.util.Map<String, Object> analytics(@RequestParam(defaultValue = "7") int days) {
+        return analyticsService.stats(days);
+    }
 
     @GetMapping("/tickets")
     public com.school.ticket.dto.PageResponse<TicketResponse> list(
